@@ -1,0 +1,130 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+	targetNamespace="http://www.example.org/storySchema" xmlns:tns="http://www.example.org/storySchema"
+	elementFormDefault="qualified">
+
+	<xs:element name="story">
+
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="tns:scene" maxOccurs="unbounded"
+					minOccurs="0" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="scene">
+		<xs:complexType mixed="true">
+			<xs:choice maxOccurs="unbounded" minOccurs="0">
+				<xs:element ref="tns:var" />
+				<xs:element ref="tns:cond" />
+				<xs:group ref="tns:htmlTags"></xs:group>
+			</xs:choice>
+			<xs:attribute name="id" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+
+	<xs:element name="var">
+
+		<xs:complexType>
+			<xs:attribute name="name" type="xs:string" />
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="cond">
+
+		<xs:complexType>
+			<xs:sequence>
+				<xs:element ref="tns:if" maxOccurs="1" minOccurs="1" />
+				<xs:element ref="tns:elseif" maxOccurs="unbounded"
+					minOccurs="0" />
+				<xs:element ref="tns:else" maxOccurs="unbounded"
+					minOccurs="0" />
+			</xs:sequence>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="if">
+
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="logic" type="xs:string"></xs:attribute>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="elseif">
+
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+					<xs:attribute name="logic" type="xs:string"></xs:attribute>
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+
+	<xs:element name="else">
+
+		<xs:complexType>
+			<xs:simpleContent>
+				<xs:extension base="xs:string">
+				</xs:extension>
+			</xs:simpleContent>
+		</xs:complexType>
+	</xs:element>
+
+
+	<xs:attributeGroup name="htmlAttributes">
+		<xs:attribute name="id" type="xs:string"></xs:attribute>
+		<xs:attribute name="class" type="xs:string"></xs:attribute>
+	</xs:attributeGroup>
+
+	<xs:group name="htmlTags">
+		<xs:choice>
+			<xs:element name="em">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:anyAttribute></xs:anyAttribute>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="strong">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:anyAttribute></xs:anyAttribute>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="mark">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:anyAttribute></xs:anyAttribute>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="span">
+				<xs:complexType>
+					<xs:simpleContent>
+						<xs:extension base="xs:string">
+							<xs:anyAttribute></xs:anyAttribute>
+						</xs:extension>
+					</xs:simpleContent>
+				</xs:complexType>
+			</xs:element>
+			<xs:element name="br">
+				<xs:complexType></xs:complexType>
+			</xs:element>
+		</xs:choice>
+	</xs:group>
+
+</xs:schema>
