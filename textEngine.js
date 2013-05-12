@@ -181,7 +181,7 @@ function load(id, keys) {
 // utility functions
 
 /**
- * Utility method for XML greater-than operations.
+ * Utility function for XML greater-than operations.
  * 
  * @param first
  * @param second
@@ -192,7 +192,7 @@ function gt(first, second) {
 }
 
 /**
- * Utility method for XML greater-than-or-equals operations.
+ * Utility function for XML greater-than-or-equals operations.
  * 
  * @param first
  * @param second
@@ -203,7 +203,7 @@ function gte(first, second) {
 }
 
 /**
- * Utility method for XML less-than operations.
+ * Utility function for XML less-than operations.
  * 
  * @param first
  * @param second
@@ -214,7 +214,7 @@ function lt(first, second) {
 }
 
 /**
- * Utility method for XML less-than-or-equals operations.
+ * Utility function for XML less-than-or-equals operations.
  * 
  * @param first
  * @param second
@@ -225,7 +225,7 @@ function lte(first, second) {
 }
 
 /**
- * Utility method for XML and operations.
+ * Utility function for XML and operations.
  * 
  * @param first
  * @param second
@@ -236,7 +236,9 @@ function and(first, second) {
 }
 
 /**
- * Utility method for XML or operations
+ * Utility function for XML or operations. It is not necessary to use this
+ * function in your story files, as the '|' character is not a special character
+ * in XML. This function is included for consistency.
  * 
  * @param first
  * @param second
@@ -247,18 +249,39 @@ function or(first, second) {
 }
 
 /**
- * Counts the key:value pairs in the object and returns the size.
+ * Utility function for XML equals operations. It is not necessary to use this
+ * function in your story files, as the '=' character is not a special character
+ * in XML. This function is included for consistency.
  * 
- * @param obj
- *            An object representing an associative array.
- * @return The number of keys:value pairs int he object.
+ * @param first
+ * @param second
+ * @return first == second
  */
-function size(obj) {
-	var size = 0, key = null;
-	for (key in obj) {
-		// $("#main").append(key);
-		if (obj.hasOwnProperty(key))
-			size++;
-	}
-	return size;
-};
+function e(first, second) {
+	return first == second;
+}
+
+/**
+ * Utility function for XML not-equals operations. It is not necessary to use
+ * this function in your story files, as the '!' character and '=' are not a
+ * special characters in XML. This function is included for consistency.
+ * 
+ * @param first
+ * @param second
+ * @return first != second
+ */
+function ne(first, second) {
+	return first != second;
+}
+
+/**
+ * Utility function for XML negation operations. It is not necessary to use this
+ * function in your story files, as the '!' character and '=' are not a special
+ * characters in XML. This function is included for consistency.
+ * 
+ * @param first
+ * @return !first
+ */
+function not(first) {
+	return !first;
+}
