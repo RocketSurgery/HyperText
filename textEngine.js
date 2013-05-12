@@ -4,11 +4,20 @@ var scenes = {};
 var TEXT_FOLDER = "text/";
 
 /**
+ * A unique identifier for the current game, used to ensure that the save files
+ * for the game do not overlap with another game.
+ */
+var GAME_ID = null;
+
+/**
  * Loads the manifest and all resource files.
  * 
  * @since 1.0
  */
-function init() {
+function init(id) {
+
+	// establish games unique identifier
+	GAME_ID = id;
 
 	// load manifest.xml and store in $manifest
 	if (window.XMLHttpRequest) {
@@ -137,7 +146,7 @@ function save(id, data) {
 	var key = null;
 	for (key in data) {
 		if (data.hasOwnProperty(key) && !_.isFunction(data[key])) {
-			var k = id + key;
+			var k = GAME_ID + id + key;
 			console.log("saving - " + key + ":" + data[key]);
 			localStorage[k] = data[key];
 		}
@@ -158,7 +167,7 @@ function load(id, keys) {
 	var pairs = {};
 	var key = null;
 	for (key in keys) {
-		var k = id + key;
+		var k = GAME_ID + id + key;
 		if (localStorage.hasOwnProperty(k) && !_.isFunction(keys[key])) {
 			var value = localStorage[k];
 			console.log("loading - " + k + ":" + value + " to " + key);
