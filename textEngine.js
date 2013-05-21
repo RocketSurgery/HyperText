@@ -1,287 +1,160 @@
-// variable to hold game manifest
-var manifest;
-var scenes = {};
-var TEXT_FOLDER = "text/";
+// create showdown extension
+(function() {
+	var stuff = function(converter) {
+		return [ {
+			// variables
+			// {-stuff-} -> <var>stuff</var>
+			type : 'lang',
+			regex : '(<<(.*)>>)',
+			replace : function(match, prefix, content, suffix) {
+				return '<span class="var">' + content + '</span>';
+			}
+		}, {
+			// scene head
+			// <p>{{(stuff)</p> -> <scene id="stuff">
+			type : 'output',
+			regex : '(<p>\\{\\{\\((.*)\\)<\\/p>)',
+			replace : function(match, prefix, value) {
+				return '<scene id="' + value + '">';
+			}
+		}, {
+			// scene head
+			// <p>}}</p> -> </scene>
+			type : 'output',
+			regex : '(<p>}}<\\/p>)',
+			replace : function(match) {
+				return '</scene>';
+			}
+		} ];
+	};
 
-/**
- * A unique identifier for the current game, used to ensure that the save files
- * for the game do not overlap with another game.
- */
-var GAME_ID = null;
-
-/**
- * Loads the manifest and all resource files.
- * 
- * @since 1.0
- */
-function init(id) {
-
-	// establish games unique identifier
-	GAME_ID = id;
-
-	// load manifest.xml and store in $manifest
-	if (window.XMLHttpRequest) {
-		// code for IE7+, Firefox, Chrome, Opera, Safari
-		xmlhttp = new XMLHttpRequest();
-	} else {
-		// code for IE6, IE5
-		xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
+	// Client-side export
+	if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) {
+		window.Showdown.extensions.stuff = stuff;
 	}
-	xmlhttp.open("GET", "manifest.XML", false);
-	xmlhttp.send();
-	manifest = xmlhttp.responseXML;
+	// Server-side export
+	if (typeof module !== 'undefined')
+		module.exports = stuff;
+}());
+(function() {
 
-	// load source files from manifest
-	$(manifest).find("source").each(function() {
+	// Establish the root object, window in the browser, or global on the server.
+	var root = this;
 
-		// load each file as xml dom
-		if (window.XMLHttpRequest)
-			xmlhttp = new XMLHttpRequest();
-		else
-			xmlhttp = new ActiveXObject("Microsoft.XMLHTTP");
-		xmlhttp.open("GET", TEXT_FOLDER + $(this).attr("src"), false);
-		xmlhttp.send();
-		var story = xmlhttp.responseXML;
+	// saves previous version of TextEngine for noConflict mode
+	var _TextEngine = root.TextEngine;
 
-		// add each value to scenes list
-		$(story).find("scene").each(function() {
-			var id = $(this).attr("id");
-			scenes[id] = this;
+	// The top-level namespace. All public TextEngine classes and modules will
+	// be attached to this.
+	var TextEngine = (function() {
+		return {};
+	});
+
+	TextEngine.test = function() {
+		console.debug("test");
+	};
+
+	// Runs TextEngine.js in *noConflict* mode, returning the TextEngine variable
+	// to its previous owner. Returns a reference to this TextEngine object.
+	TextEngine.noConflict = function() {
+		root.TextEngine = _TextEngine;
+		return this;
+	};
+
+	// ////////////////////////////
+	// main TextEngine code
+	// ////////////////////////////
+
+	// private variables
+	var converter = TextEngine.converter = new Showdown.converter({
+		extensions : [ 'stuff' ]
+	});
+	var scenes = TextEngine.scenes = {};
+	var variables = null;
+	var configured = false;
+
+	TextEngine.config = function(conf) {
+
+		// get variables container
+		if (!conf.variables)
+			throw "config must include a value for 'variables'";
+		variables = this.variables = conf.variables;
+
+		// if baseUrl is set
+		var baseUrl = this.baseUrl = "";
+		if (conf.baseUrl) {
+			baseUrl = this.baseUrl += conf.baseUrl + "/";
+		}
+
+		// go through the list of files and load the scenes in each one
+		if (!conf.files)
+			throw "config must include a value for 'files'";
+		var sourcesList = this.sourcesList = conf.files;
+		for ( var i = 0, len = sourcesList.length; i < len; i++) {
+			var URL = baseUrl + sourcesList[i] + ".md";
+			console.log(i + " : " + URL);
+			$.ajax({
+				url : URL,
+				success : function(data) {
+
+					// run data through showdown to convert to markup
+					data = new String(data);
+					data = converter.makeHtml(data);
+
+					// add wrapper tag to make legal XML
+					data = "<story>" + data + "</story>";
+
+					console.debug(data);
+
+					// iterate over each scene tag and store html in scenes
+					var xml = $.parseXML(data);
+					console.debug(xml);
+
+					$(xml).find("scene").each(function() {
+						var id = $(this).attr("id");
+						console.debug(id);
+						console.debug(this);
+						scenes[id] = this;
+					});
+				},
+				async : false
+
+			});
+		}
+
+		configured = true;
+	};
+
+	TextEngine.scene = function(sceneID) {
+		
+		if (!configured)
+			throw "TextEngine.config() must be the first function called";
+
+		var scene = scenes[sceneID];
+		console.debug(scene);
+
+		if (scene === undefined)
+			throw "call to scene " + sceneID + " must provide the ID of an existing scene";
+
+		// evaluate variables
+		$(scene).find("span").text(function(index, text) {
+			console.debug(this);
+			var returnVal = variables[text];
+			console.debug(returnVal);
+			return returnVal;
 		});
 
-	});
+		// trick javascript into recognizing html
+		var div = document.createElement("div");
+		$(div).append($(scene).contents());
+		console.debug(div);
+		$(div).html($(div).html());
+		
+		return $(div).html();
+	};
 
-	console.log(size(scenes) + " scenes loaded");
-}
+	// establish global TextEngine variable
+	root.TextEngine = TextEngine;
+	return TextEngine;
 
-// text-generation functions
-
-/**
- * Parse the given scene and replace var and cond tags with appropriate text,
- * then return the formatted html.
- * 
- * @param s
- *            A jQuery object containing the scene to be parsed.
- * @return The formatted scene text as html
- * @since 1.0
- */
-function formatScene(s) {
-
-	var scene = $(s).clone();
-
-	// replace var tags with proper content
-	$(scene).find("var").replaceWith(function() {
-		return eval($(this).attr("name"));
-	});
-
-	// replace cond tags with proper content
-	$(scene).find("cond").replaceWith(function() {
-		var cond = generateConditionalText(this);
-		return cond;
-	});
-
-	// format remaining tags as html
-	var node = document.createElement("p");
-	$(scene).contents().each(function() {
-		$(node).append(this);
-	});
-	$(node).html($(node).html());
-
-	// remove duplicate br tags
-	var removeFlag = false;
-	$(node).find("br").each(function() {
-		if (removeFlag) {
-			this.remove();
-			removeFlag = false;
-		} else {
-			removeFlag = true;
-		}
-	});
-
-	return $(node).html();
-}
-
-/**
- * Parses and evaluates the supplied conditional tag and returns the appropriate
- * text.
- * 
- * @param cond
- *            An object representing the a cond tag.
- * @returns A string with the appropriate text based on the evaluation of the
- *          conditional.
- * @since 1.0
- */
-function generateConditionalText(cond) {
-	var returnVal = null;
-	var result = eval($(cond).find("if").attr("logic"));
-	if (result)
-		return $(cond).find("if").text();
-	$(cond).find("elseif").each(function() {
-		result = eval($(this).attr("logic"));
-		if (result) {
-			returnVal = $(this).text();
-			return;
-		}
-	});
-	if (returnVal)
-		return returnVal;
-	return $(cond).find("else").text();
-}
-
-// save functions
-
-/**
- * Save the key-value pairs provided in data with the unique identifier
- * provided. Ignores functions. Only keys with values (null or an object) are
- * saved, unassigned keys are ignored.
- * 
- * @param file
- *            A unique identifier for the data to be saved.
- * @param data
- *            An associative array with key-value pairs to be saved.
- * @since 1.0
- */
-function save(id, data) {
-	console.log("saving under id: " + id);
-	var key = null;
-	for (key in data) {
-		if (data.hasOwnProperty(key) && !_.isFunction(data[key])) {
-			var k = GAME_ID + id + key;
-			console.log("saving - " + key + ":" + data[key]);
-			localStorage[k] = data[key];
-		}
-	}
-}
-
-/**
- * Load the data identified by id. Ignores functions in keys. Will not load
- * empty keys, so keys must at least be assigned null or some value, though the
- * values will be ignored.
- * 
- * @param file
- *            the identifier of the file attempting to be loaded.
- * @return the save file if it exists, false otherwise.
- * @since 1.0
- */
-function load(id, keys) {
-	var pairs = {};
-	var key = null;
-	for (key in keys) {
-		var k = GAME_ID + id + key;
-		if (localStorage.hasOwnProperty(k) && !_.isFunction(keys[key])) {
-			var value = localStorage[k];
-			console.log("loading - " + k + ":" + value + " to " + key);
-			pairs[key] = value;
-		}
-	}
-	console.debug("loaded: " + pairs);
-	return pairs;
-}
-
-// utility functions
-
-/**
- * Utility function for XML greater-than operations.
- * 
- * @param first
- * @param second
- * @return first > second
- */
-function gt(first, second) {
-	return first > second;
-}
-
-/**
- * Utility function for XML greater-than-or-equals operations.
- * 
- * @param first
- * @param second
- * @return first >= second
- */
-function gte(first, second) {
-	return first >= second;
-}
-
-/**
- * Utility function for XML less-than operations.
- * 
- * @param first
- * @param second
- * @returns first < second
- */
-function lt(first, second) {
-	return first < second;
-}
-
-/**
- * Utility function for XML less-than-or-equals operations.
- * 
- * @param first
- * @param second
- * @returns first <= second
- */
-function lte(first, second) {
-	return first <= second;
-}
-
-/**
- * Utility function for XML and operations.
- * 
- * @param first
- * @param second
- * @returns first && second
- */
-function and(first, second) {
-	return first && second;
-}
-
-/**
- * Utility function for XML or operations. It is not necessary to use this
- * function in your story files, as the '|' character is not a special character
- * in XML. This function is included for consistency.
- * 
- * @param first
- * @param second
- * @returns first || second
- */
-function or(first, second) {
-	return first || second;
-}
-
-/**
- * Utility function for XML equals operations. It is not necessary to use this
- * function in your story files, as the '=' character is not a special character
- * in XML. This function is included for consistency.
- * 
- * @param first
- * @param second
- * @return first == second
- */
-function e(first, second) {
-	return first == second;
-}
-
-/**
- * Utility function for XML not-equals operations. It is not necessary to use
- * this function in your story files, as the '!' character and '=' are not a
- * special characters in XML. This function is included for consistency.
- * 
- * @param first
- * @param second
- * @return first != second
- */
-function ne(first, second) {
-	return first != second;
-}
-
-/**
- * Utility function for XML negation operations. It is not necessary to use this
- * function in your story files, as the '!' character and '=' are not a special
- * characters in XML. This function is included for consistency.
- * 
- * @param first
- * @return !first
- */
-function not(first) {
-	return !first;
-}
+}).call(this);

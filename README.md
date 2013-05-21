@@ -2,13 +2,16 @@
 
 An HTML5 game engine for creating text-based games. It is currently in development, so check back occasionally to see what's been added.
 
-##Functionality
+##Config
 
-* Load text from external file and display it.
-* Save and Load files
-* Include variables in story files.
-* Include conditionals in story files.
-* XML Schema for validation of manifest and story files.
+* variables - an object containing all the values referenced in your scene texts. All referenced variables must be defined or unpredictable behavior will result.
+* baseUrl - the base url for your story files.
+* files - an array containing the urls for your story files. The engine will load the files and parse the scenes.
 
-##Design Details
-* There is a central manifest.xml which contains a list of all the story files. Files must be kept in the “text” directory, and any number of sub-directories can be added as long as the manifest contains the full path the the story file.
+##Syntax
+
+The engine uses standard markdown with a few additional pieces of syntax to denote engine-specific elements.
+
+* `{{(sceneName)` - scene opener. This goes at the beginning of a scene, with the name of the scene between the parentheses. This must be matched with a scene closer.
+* `}}` - scene closer. This goes at the end of the markdown for a scene. Must be matched with a scene opener.
+* `<<variableName>>` - the name of a variable. The object containing the variables you want to use must be passed in with config().
