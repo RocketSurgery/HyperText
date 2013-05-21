@@ -4,9 +4,13 @@ An HTML5 game engine for creating text-based games. It is currently in developme
 
 ##Config
 
-* variables - an object containing all the values referenced in your scene texts. All referenced variables must be defined or unpredictable behavior will result.
-* baseUrl - the base url for your story files.
-* files - an array containing the urls for your story files. The engine will load the files and parse the scenes.
+The configuration of the engine must be established before any of the engine's functionality can be used. This can be done by calling `TextEngine.config(configuration)`, with `configuration` being an object with the following properties:
+
+* `variables` - an object containing all the values referenced in your scene texts. All referenced variables must be defined or unpredictable behavior will result.
+* `baseUrl` - the base url for your story files. This is an optional attribute.
+* `files` - an array containing the urls for your story files. The engine will load the files and parse the scenes.
+
+All properties are required unless specified otherwise.
 
 ##Syntax
 
