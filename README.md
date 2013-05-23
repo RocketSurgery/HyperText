@@ -54,7 +54,7 @@ You can define, manipulate, and print variables using macros.
 * `<<$variable += $stuff>>` - if no macro command is provided, the content within the macro is simply executed as normal. In this case, the value of $stuff would be added to $variable. 
 * `<<print $variable>>` - replaces macro with value of $variable.
 
-For more complex variable usage, you can provide the engine with an object containing your variables through the `init()` function. You can use this to create more complex variable structures, such as your own classes. For example say you have a 'Character' class, which has a 'name' value. If you have a variable $player which is an instance of 'Character', you could print out the player's name with <<print $player.name>>.
+For more complex variable usage, you can provide the engine with an object containing your variables through the `init()` function. You can use this to create more complex variable structures, such as your own classes. For example say you have a 'Character' class, which has a 'name' value. If you have a variable $player which is an instance of 'Character', you could print out the player's name with `<<print $player.name>>`.
 
 ### Conditionals
 
