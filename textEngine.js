@@ -50,6 +50,7 @@
 	if (typeof module !== 'undefined')
 		module.exports = stuff;
 }());
+
 (function(window, undefined) {
 
 	// Establish the root object, window in the browser, or global on the server.
@@ -71,12 +72,83 @@
 		return this;
 	};
 
+	// utility methods
+	var isFunction = function(functionToCheck) {
+		var getType = {};
+		return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
+	};
+
 	// ////////////////////////////
 	// main HyperText code
 	// ////////////////////////////
 
-	
-	// stuff copied from jQuery to be AMD complient
+	var baseUrl = "";
+	var variables;
+	var start = null;
+	var filesList = [];
+	var linkHandling = "manual";
+	var linkHandler;
+	var display;
+
+	HyperText.init = function(config) {
+
+		// get baseUrl
+		if (typeof onfig.baseUrl !== undefined && typeof config.baseUrl === "string") {
+			if (config.baseUrl.lastIndexOf("/") == config.baseUrl.length - 1)
+				baseUrl = config.baseUrl;
+			else
+				baseUrl = config.baseUrl + "/";
+		}
+
+		// TODO get variables
+
+		// get start
+		if (typeof config.start !== undefined && typeof config.start === "string") {
+			start = baseUrl + config.start;
+			filesList.push(start);
+		} else {
+			throw "config must have value 'start', which must be a string with the address of your starting scene.";
+		}
+
+		// get files
+		if (typeof config.files !== undefined && Object.prototype.toString.call(config.files) === '[object Array]') {
+
+			// iterate over each string, append it to baseUrl, and add it to filesList
+			for ( var i = 0, len = config.files.length; i < len; i++) {
+				var file = baseUrl + config.files[i];
+				filesList.push(file);
+			}
+
+		} else {
+			throw "config must have a value 'files', which must be an array of strings with addresses to your story files.";
+		}
+
+		// get linkHandling
+		if (typeof config.linkHandling !== undefined) {
+			linkHandling = config.linkHandling;
+			if (linkHandling !== "manual" && linkHandling !== "auto")
+				throw "if config has a value for 'linkHandling', its value must be either 'manual' or 'auto'.";
+		}
+
+		// get linkHandler
+		if (linkHandling === "manual") {
+			if (typeof config.linkHandler !== undefined && isFunction(config.linkHandler)) {
+				linkHandler = config.linkHandler;
+			} else {
+				throw "if 'manual' is chosen for 'linkHandling', a function must be provided for 'linkHandler'.";
+			}
+		}
+		
+		// get display
+		if (typeof config.display !== undefined) {
+			display = config.display;
+		}
+		
+	};
+
+	// ///////////////////////////////////////////////
+	// copied from jQuery to be AMD compliant
+	// ///////////////////////////////////////////////
 	if (typeof module === "object" && typeof module.exports === "object") {
 		module.exports = HyperText;
 	} else {

@@ -69,7 +69,6 @@ Standard javascript comparison operations can be used in your conditionals to co
 * `<<if $val == $other>>`
 * `<<if $val > $other>>`
 * `<<if ($val || $other) && $something>>`
-* `<<if ($val or $other) and $something>>`
 
 ### Functions and Scripting
 
@@ -98,7 +97,7 @@ In order to avoid polluting the global namespace, all of the engine's functional
 
 ### Initialization
 
-The engine must be initialized with a configuration before it can be used. This must be done by calling `TextEngine.init(configuration)`, with `configuration` being an object with the following properties:
+The engine must be initialized with a configuration before it can be used. This must be done by calling `HyperText.init(configuration)`, with `configuration` being an object with the following properties:
 
 * `baseUrl` - the base url for your story files. This is an optional attribute.
 * `variables` - an object containing any additional variables you would like to reference in your macros.
@@ -112,4 +111,4 @@ All properties are required unless specified otherwise.
 
 ### Scene
 
-The `TextEngine.Scene` class contains all of the information for your various scenes. Scenes are identified by a unique identifier provided in their declaring macro.
+The `HyperText.Scene` class contains all of the information for your various scenes. Scenes are identified by a unique identifier provided in their declaring macro.
