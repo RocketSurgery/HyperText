@@ -3,14 +3,14 @@
 	var stuff = function(converter) {
 		return [ {
 			// variables
-			// {-stuff-} -> <var>stuff</var>
+			// <<stuff>> -> <var>stuff</var>
 			type : 'lang',
 			regex : '(<<(.*)>>)',
 			replace : function(match, prefix, content, suffix) {
 				return '<span class="var">' + content + '</span>';
 			}
 		}, {
-			// scene head
+			// scene open
 			// <p>{{(stuff)</p> -> <scene id="stuff">
 			type : 'output',
 			regex : '(<p>\\{\\{\\((.*)\\)<\\/p>)',
@@ -18,13 +18,27 @@
 				return '<scene id="' + value + '">';
 			}
 		}, {
-			// scene head
+			// scene close
 			// <p>}}</p> -> </scene>
 			type : 'output',
 			regex : '(<p>}}<\\/p>)',
 			replace : function(match) {
 				return '</scene>';
 			}
+		}, {
+			// scene links
+			// [[text]](sceneName) -> <a href="sceneName" class="scene">text</a>
+			type : 'lang',
+			regex : '(\\[\\[(.*)\\]\\]\\((.*)\\))',
+			replace : function(match, otherMatch, text, sceneName) {
+				return '<a href="' + sceneName + '" class="scene">' + text + '</a>';
+			}
+		}, {
+			// fix <br> tags to make xml complient
+			// <br> -> <br />
+			type : 'output',
+			regex : '<br>',
+			replace : '<br />'
 		} ];
 	};
 
@@ -36,125 +50,47 @@
 	if (typeof module !== 'undefined')
 		module.exports = stuff;
 }());
-(function() {
+(function(window, undefined) {
 
 	// Establish the root object, window in the browser, or global on the server.
-	var root = this;
+	var root = window;
 
-	// saves previous version of TextEngine for noConflict mode
-	var _TextEngine = root.TextEngine;
+	// saves previous version of HyperText for noConflict mode
+	var _HyperText = root.HyperText;
 
-	// The top-level namespace. All public TextEngine classes and modules will
+	// The top-level namespace. All public HyperText classes and modules will
 	// be attached to this.
-	var TextEngine = (function() {
+	var HyperText = (function() {
 		return {};
 	});
 
-	TextEngine.test = function() {
-		console.debug("test");
-	};
-
-	// Runs TextEngine.js in *noConflict* mode, returning the TextEngine variable
-	// to its previous owner. Returns a reference to this TextEngine object.
-	TextEngine.noConflict = function() {
-		root.TextEngine = _TextEngine;
+	// Runs HyperText.js in *noConflict* mode, returning the HyperText variable
+	// to its previous owner. Returns a reference to this HyperText object.
+	HyperText.noConflict = function() {
+		root.HyperText = _HyperText;
 		return this;
 	};
 
 	// ////////////////////////////
-	// main TextEngine code
+	// main HyperText code
 	// ////////////////////////////
 
-	// private variables
-	var converter = TextEngine.converter = new Showdown.converter({
-		extensions : [ 'stuff' ]
-	});
-	var scenes = TextEngine.scenes = {};
-	var variables = null;
-	var configured = false;
-
-	TextEngine.config = function(conf) {
-
-		// get variables container
-		if (!conf.variables)
-			throw "config must include a value for 'variables'";
-		variables = this.variables = conf.variables;
-
-		// if baseUrl is set
-		var baseUrl = this.baseUrl = "";
-		if (conf.baseUrl) {
-			baseUrl = this.baseUrl += conf.baseUrl + "/";
-		}
-
-		// go through the list of files and load the scenes in each one
-		if (!conf.files)
-			throw "config must include a value for 'files'";
-		var sourcesList = this.sourcesList = conf.files;
-		for ( var i = 0, len = sourcesList.length; i < len; i++) {
-			var URL = baseUrl + sourcesList[i] + ".md";
-			console.log(i + " : " + URL);
-			$.ajax({
-				url : URL,
-				success : function(data) {
-
-					// run data through showdown to convert to markup
-					data = new String(data);
-					data = converter.makeHtml(data);
-
-					// add wrapper tag to make legal XML
-					data = "<story>" + data + "</story>";
-
-					console.debug(data);
-
-					// iterate over each scene tag and store html in scenes
-					var xml = $.parseXML(data);
-					console.debug(xml);
-
-					$(xml).find("scene").each(function() {
-						var id = $(this).attr("id");
-						console.debug(id);
-						console.debug(this);
-						scenes[id] = this;
-					});
-				},
-				async : false
-
+	
+	// stuff copied from jQuery to be AMD complient
+	if (typeof module === "object" && typeof module.exports === "object") {
+		module.exports = HyperText;
+	} else {
+		if (typeof define === "function" && define.amd) {
+			define("hypertext", [], function() {
+				return HyperText;
 			});
 		}
+	}
 
-		configured = true;
-	};
+	// If there is a window object, that at least has a document property,
+	// define jQuery and $ identifiers
+	if (typeof window === "object" && typeof window.document === "object") {
+		window.HyperText = HyperText;
+	}
 
-	TextEngine.scene = function(sceneID) {
-		
-		if (!configured)
-			throw "TextEngine.config() must be the first function called";
-
-		var scene = scenes[sceneID];
-		console.debug(scene);
-
-		if (scene === undefined)
-			throw "call to scene " + sceneID + " must provide the ID of an existing scene";
-
-		// evaluate variables
-		$(scene).find("span").text(function(index, text) {
-			console.debug(this);
-			var returnVal = variables[text];
-			console.debug(returnVal);
-			return returnVal;
-		});
-
-		// trick javascript into recognizing html
-		var div = document.createElement("div");
-		$(div).append($(scene).contents());
-		console.debug(div);
-		$(div).html($(div).html());
-		
-		return $(div).html();
-	};
-
-	// establish global TextEngine variable
-	root.TextEngine = TextEngine;
-	return TextEngine;
-
-}).call(this);
+})(window);
