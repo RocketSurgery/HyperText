@@ -40,7 +40,7 @@ All macros are wrapped in double angle-braces, and are started with a command, s
 
 Scenes are declared with the `scene` macro. They are given an identifying name, which must be formatted in the same way as javascript variable names, and must be unique for your entire game structure.
 
-`<<scene sceneName>>
+`<<scene sceneName>>`
 
 Scenes can be dynamically displayed with the `print` macro.
 
@@ -62,14 +62,14 @@ Conditional blocks only display the contained text if their conditions evaluate 
 
 * `<<if $condition>>...<<endif>>`
 * `<<if $condition>>...<<else>>...<<endif>>`
-* `<<if $condition>>...<<elseif $otherCondition>>...<<endif>>
+* `<<if $condition>>...<<elseif $otherCondition>>...<<endif>>`
 
 Standard javascript comparison operations can be used in your conditionals to compare values.
 
 * `<<if $val == $other>>`
 * `<<if $val > $other>>`
-* `<<if ($val || $other) && $something>>
-* `<<if ($val or $other) and $something>>
+* `<<if ($val || $other) && $something>>`
+* `<<if ($val or $other) and $something>>`
 
 ### Functions and Scripting
 
