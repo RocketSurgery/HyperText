@@ -79,7 +79,7 @@
 	};
 
 	// Variables private class
-	var Variables = (function(initial) {
+	var Variables = function(initial) {
 		this.values = {};
 
 		if (typeof initial !== undefined) {
@@ -88,9 +88,7 @@
 				this.values[key] = initial[key];
 			}
 		}
-
-		return this;
-	});
+	};
 
 	Variables.prototype.addValue = function(name, value) {
 		this.values[name] = value;
@@ -116,6 +114,29 @@
 
 	Variables.prototype.getValue = function(name) {
 		return this.values[name];
+	};
+	
+	// Scene private class
+	var Scene = function(id, text) {
+		this.id = id;
+		this.rawText = text;
+	};
+	
+	Scene.prototype.getId() {
+		return this.id;
+	};
+	
+	Scene.prototype.getRawText() {
+		return this.rawText;
+	};
+	
+	Scene.prototype.getParsedText(vars) {
+		// TODO write text parser for Scene
+	};
+	
+	Scene.prototype.getParsedTextAsHtml(vars) {
+		var parsedText = this.getParsedText(vars);
+		// TODO put parsed text through Markdown converter
 	};
 
 	// Hypertext main stuff
