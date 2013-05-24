@@ -82,9 +82,11 @@
 	var Variables = (function(initial) {
 		this.values = {};
 
-		var key = null;
-		for (key in initial) {
-			this.values[key] = initial[key];
+		if (typeof initial !== undefined) {
+			var key = null;
+			for (key in initial) {
+				this.values[key] = initial[key];
+			}
 		}
 
 		return this;
@@ -93,7 +95,7 @@
 	Variables.prototype.addValue = function(name, value) {
 		this.values[name] = value;
 	};
-	
+
 	Variables.prototype.addValues = function(values) {
 		var key = null;
 		for (key in initial) {
@@ -104,7 +106,7 @@
 	Variables.prototype.setValue = function(name, value) {
 		this.values[name] = value;
 	};
-	
+
 	Variables.prototype.setValues = function(values) {
 		var key = null;
 		for (key in initial) {
@@ -135,7 +137,10 @@
 				baseUrl = config.baseUrl + "/";
 		}
 
-		// TODO get variables
+		// get variables
+		if (typeof config.variables !== undefined && typeof config.variables === 'object') {
+			variables = new Variables(config.variables);
+		}
 
 		// get start
 		if (typeof config.start !== undefined && typeof config.start === "string") {
