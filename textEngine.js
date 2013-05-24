@@ -78,12 +78,47 @@
 		return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
 	};
 
-	// ////////////////////////////
-	// main HyperText code
-	// ////////////////////////////
+	// Variables private class
+	var Variables = (function(initial) {
+		this.values = {};
 
+		var key = null;
+		for (key in initial) {
+			this.values[key] = initial[key];
+		}
+
+		return this;
+	});
+
+	Variables.prototype.addValue = function(name, value) {
+		this.values[name] = value;
+	};
+	
+	Variables.prototype.addValues = function(values) {
+		var key = null;
+		for (key in initial) {
+			this.values[key] = initial[key];
+		}
+	};
+
+	Variables.prototype.setValue = function(name, value) {
+		this.values[name] = value;
+	};
+	
+	Variables.prototype.setValues = function(values) {
+		var key = null;
+		for (key in initial) {
+			this.values[key] = initial[key];
+		}
+	};
+
+	Variables.prototype.getValue = function(name) {
+		return this.values[name];
+	};
+
+	// Hypertext main stuff
 	var baseUrl = "";
-	var variables;
+	var variables = new Variables();
 	var start = null;
 	var filesList = [];
 	var linkHandling = "manual";
@@ -138,12 +173,12 @@
 				throw "if 'manual' is chosen for 'linkHandling', a function must be provided for 'linkHandler'.";
 			}
 		}
-		
+
 		// get display
 		if (typeof config.display !== undefined) {
 			display = config.display;
 		}
-		
+
 	};
 
 	// ///////////////////////////////////////////////

@@ -112,3 +112,9 @@ All properties are required unless specified otherwise.
 ### Scene
 
 The `HyperText.Scene` class contains all of the information for your various scenes. Scenes are identified by a unique identifier provided in their declaring macro.
+
+### Variables
+
+The `HyperText.Variables` class manages the variables used in your games, including those you declare dynamically with macros, and allows you to access and manipulate those variables. Values are declared and stored as standard javascript values, so anything that is permissible under standard javascript is allowed in Hypertext.
+
+This means that variables may be simple objects, arrays, or even functions, so long as you access them appropriately for their type (access functions with a round braces, don't try to access a property that an object doesn't have, etc.). 
