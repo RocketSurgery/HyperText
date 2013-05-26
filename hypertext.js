@@ -46,6 +46,7 @@
 	if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) {
 		window.Showdown.extensions.stuff = stuff;
 	}
+	
 	// Server-side export
 	if (typeof module !== 'undefined')
 		module.exports = stuff;
@@ -144,12 +145,34 @@
 	var baseUrl = "";
 	var variables = new Variables();
 	var start = null;
+	var startScene;
 	var filesList = [];
 	var linkHandling = "manual";
 	var linkHandler;
 	var display;
 	var scenes = {};
 
+	var parseScenesFromFile = function(file) {
+		
+	};
+	
+	var loadFileAndParseScenesSync = function(URL) {
+		var file = null;
+		$.ajax({
+			url : URL,
+			success : function(result) {
+				file = result
+			},
+			async : false
+		});
+		
+		parseScenesFromFile(file);
+	};
+	
+	var loadFileAndParseScenes = function(URL) {
+		
+	};
+	
 	HyperText.init = function(config) {
 
 		// get baseUrl
@@ -208,13 +231,11 @@
 		}
 
 		// load start file
-		$.ajax({
-			url : start,
-			success : function(result) {
-				console.debug(result);
-			},
-			async : false
-		});
+		loadFileAndParseScenesSync(start);
+		
+		// load remaining files
+		for (var i = 0, len = filesList.length; i < len; i++)
+			loadFileAndParseScenes(fileList[i]);
 
 	};
 
