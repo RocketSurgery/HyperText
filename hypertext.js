@@ -115,26 +115,27 @@
 	Variables.prototype.getValue = function(name) {
 		return this.values[name];
 	};
-	
+
 	// Scene private class
 	var Scene = function(id, text) {
 		this.id = id;
 		this.rawText = text;
 	};
-	
-	Scene.prototype.getId() {
+
+	Scene.prototype.getId = function() {
 		return this.id;
 	};
-	
-	Scene.prototype.getRawText() {
+
+	Scene.prototype.getRawText = function() {
 		return this.rawText;
 	};
-	
-	Scene.prototype.getParsedText(vars) {
+
+	Scene.prototype.getParsedText = function(vars) {
+		var rawText = this.getRawText();
 		// TODO write text parser for Scene
 	};
-	
-	Scene.prototype.getParsedTextAsHtml(vars) {
+
+	Scene.prototype.getParsedTextAsHtml = function(vars) {
 		var parsedText = this.getParsedText(vars);
 		// TODO put parsed text through Markdown converter
 	};
@@ -147,11 +148,12 @@
 	var linkHandling = "manual";
 	var linkHandler;
 	var display;
+	var scenes = {};
 
 	HyperText.init = function(config) {
 
 		// get baseUrl
-		if (typeof onfig.baseUrl !== undefined && typeof config.baseUrl === "string") {
+		if (typeof config.baseUrl !== undefined && typeof config.baseUrl === "string") {
 			if (config.baseUrl.lastIndexOf("/") == config.baseUrl.length - 1)
 				baseUrl = config.baseUrl;
 			else
@@ -165,7 +167,7 @@
 
 		// get start
 		if (typeof config.start !== undefined && typeof config.start === "string") {
-			start = baseUrl + config.start;
+			start = baseUrl + config.start + ".md";
 			filesList.push(start);
 		} else {
 			throw "config must have value 'start', which must be a string with the address of your starting scene.";
@@ -176,7 +178,7 @@
 
 			// iterate over each string, append it to baseUrl, and add it to filesList
 			for ( var i = 0, len = config.files.length; i < len; i++) {
-				var file = baseUrl + config.files[i];
+				var file = baseUrl + config.files[i] + ".md";
 				filesList.push(file);
 			}
 
@@ -205,6 +207,23 @@
 			display = config.display;
 		}
 
+		// load start file
+		$.ajax({
+			url : start,
+			success : function(result) {
+				console.debug(result);
+			},
+			async : false
+		});
+
+	};
+
+	HyperText.getSceneHtml = function(id) {
+		if (typeof scenes[id] !== undefined) {
+			return scenes[id];
+		} else {
+			throw "Scene " + id + " does not exist or has not been loaded";
+		}
 	};
 
 	// ///////////////////////////////////////////////
@@ -212,12 +231,11 @@
 	// ///////////////////////////////////////////////
 	if (typeof module === "object" && typeof module.exports === "object") {
 		module.exports = HyperText;
-	} else {
-		if (typeof define === "function" && define.amd) {
-			define("hypertext", [], function() {
-				return HyperText;
-			});
-		}
+	}
+	if (typeof define === "function" && define.amd) {
+		define("hypertext", [], function() {
+			return HyperText;
+		});
 	}
 
 	// If there is a window object, that at least has a document property,
