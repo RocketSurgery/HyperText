@@ -46,7 +46,7 @@
 	if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) {
 		window.Showdown.extensions.stuff = stuff;
 	}
-	
+
 	// Server-side export
 	if (typeof module !== 'undefined')
 		module.exports = stuff;
@@ -152,27 +152,50 @@
 	var display;
 	var scenes = {};
 
-	var parseScenesFromFile = function(file) {
-		
+	HyperText.prototype.parseScenesFromFile = function(file) {
+		var index = file.indexOf("<<scene");
+		while (index != -1) {
+			
+			// get indices
+			var properIndex = index + 8;
+			var closeIndex = file.indexOf(">>", properIndex);
+			
+			// get id
+			var id = file.substring(properIndex, closeIndex);
+			index = file.IndexOf("<<scene", properIndex);
+			
+			// get scene text
+			var sceneText;
+			if (index == -1)
+				sceneText = file.substring(closeIndex + 2);
+			else
+				sceneText = file.substring(closeIndex + 2, index);
+			
+			// add scene to scenes
+			scenes[id] = sceneText
+		}
 	};
-	
-	var loadFileAndParseScenesSync = function(URL) {
-		var file = null;
+
+	HyperText.prototype.loadFileAndParseScenesSync = function(URL) {
 		$.ajax({
 			url : URL,
 			success : function(result) {
-				file = result
+				parseScenesFromFile(result);
 			},
 			async : false
 		});
-		
-		parseScenesFromFile(file);
 	};
-	
-	var loadFileAndParseScenes = function(URL) {
-		
+
+	HyperText.prototype.loadFileAndParseScenes = function(URL) {
+		$.ajax({
+			url : URL,
+			success : function(result) {
+				parseScenesFromFile(result);
+			},
+			async : true
+		});
 	};
-	
+
 	HyperText.init = function(config) {
 
 		// get baseUrl
@@ -232,9 +255,9 @@
 
 		// load start file
 		loadFileAndParseScenesSync(start);
-		
+
 		// load remaining files
-		for (var i = 0, len = filesList.length; i < len; i++)
+		for ( var i = 0, len = filesList.length; i < len; i++)
 			loadFileAndParseScenes(fileList[i]);
 
 	};
