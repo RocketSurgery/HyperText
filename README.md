@@ -1,7 +1,5 @@
 # HyperText
 
-something changed
-
 An HTML5 game engine for creating text-based games. It is currently in development, so check back occasionally to see what's been added.
 
 ## About
