@@ -146,37 +146,40 @@
 	var variables = new Variables();
 	var start = null;
 	var startScene;
-	var filesList = [];
+	var fileList = [];
 	var linkHandling = "manual";
 	var linkHandler;
 	var display;
 	var scenes = {};
 
-	HyperText.prototype.parseScenesFromFile = function(file) {
+	var parseScenesFromFile = HyperText.parseScenesFromFile = function(file) {
+
+		file = new String(file);
+
 		var index = file.indexOf("<<scene");
 		while (index != -1) {
-			
+
 			// get indices
 			var properIndex = index + 8;
 			var closeIndex = file.indexOf(">>", properIndex);
-			
+
 			// get id
 			var id = file.substring(properIndex, closeIndex);
-			index = file.IndexOf("<<scene", properIndex);
-			
+			index = file.indexOf("<<scene", properIndex);
+
 			// get scene text
 			var sceneText;
 			if (index == -1)
 				sceneText = file.substring(closeIndex + 2);
 			else
 				sceneText = file.substring(closeIndex + 2, index);
-			
+
 			// add scene to scenes
 			scenes[id] = sceneText
 		}
 	};
 
-	HyperText.prototype.loadFileAndParseScenesSync = function(URL) {
+	var loadFileAndParseScenesSync = HyperText.loadFileAndParseScenesSync = function(URL) {
 		$.ajax({
 			url : URL,
 			success : function(result) {
@@ -186,7 +189,7 @@
 		});
 	};
 
-	HyperText.prototype.loadFileAndParseScenes = function(URL) {
+	var loadFileAndParseScenes = HyperText.loadFileAndParseScenes = function(URL) {
 		$.ajax({
 			url : URL,
 			success : function(result) {
@@ -214,7 +217,7 @@
 		// get start
 		if (typeof config.start !== undefined && typeof config.start === "string") {
 			start = baseUrl + config.start + ".md";
-			filesList.push(start);
+			fileList.push(start);
 		} else {
 			throw "config must have value 'start', which must be a string with the address of your starting scene.";
 		}
@@ -225,7 +228,7 @@
 			// iterate over each string, append it to baseUrl, and add it to filesList
 			for ( var i = 0, len = config.files.length; i < len; i++) {
 				var file = baseUrl + config.files[i] + ".md";
-				filesList.push(file);
+				fileList.push(file);
 			}
 
 		} else {
@@ -257,7 +260,7 @@
 		loadFileAndParseScenesSync(start);
 
 		// load remaining files
-		for ( var i = 0, len = filesList.length; i < len; i++)
+		for ( var i = 0, len = fileList.length; i < len; i++)
 			loadFileAndParseScenes(fileList[i]);
 
 	};
