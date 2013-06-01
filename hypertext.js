@@ -263,10 +263,22 @@
 		for ( var i = 0, len = fileList.length; i < len; i++)
 			loadFileAndParseScenes(fileList[i]);
 
+		if (linkHandling == "auto") {
+			if (hasScene("start"))
+				$(display).html(getSceneHtml("start"));
+			else
+				throw "starting file must contain a scene with id 'start'.";
+		}
+
 	};
 
-	HyperText.getSceneHtml = function(id) {
-		if (typeof scenes[id] !== undefined) {
+	var hasScene = HyperText.hasScene = function(id) {
+		return (typeof scenes[id] !== undefined);
+	};
+
+	var getSceneHtml = HyperText.getSceneHtml = function(id) {
+		if (hasScene(id)) {
+			// TODO write method to load scene
 			return scenes[id];
 		} else {
 			throw "Scene " + id + " does not exist or has not been loaded";
