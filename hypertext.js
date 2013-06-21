@@ -1,57 +1,3 @@
-// create showdown extension
-(function() {
-	var stuff = function(converter) {
-		return [ {
-			// variables
-			// <<stuff>> -> <var>stuff</var>
-			type : 'lang',
-			regex : '(<<(.*)>>)',
-			replace : function(match, prefix, content, suffix) {
-				return '<span class="var">' + content + '</span>';
-			}
-		}, {
-			// scene open
-			// <p>{{(stuff)</p> -> <scene id="stuff">
-			type : 'output',
-			regex : '(<p>\\{\\{\\((.*)\\)<\\/p>)',
-			replace : function(match, prefix, value) {
-				return '<scene id="' + value + '">';
-			}
-		}, {
-			// scene close
-			// <p>}}</p> -> </scene>
-			type : 'output',
-			regex : '(<p>}}<\\/p>)',
-			replace : function(match) {
-				return '</scene>';
-			}
-		}, {
-			// scene links
-			// [[text]](sceneName) -> <a href="sceneName" class="scene">text</a>
-			type : 'lang',
-			regex : '(\\[\\[(.*)\\]\\]\\((.*)\\))',
-			replace : function(match, otherMatch, text, sceneName) {
-				return '<a href="' + sceneName + '" class="scene">' + text + '</a>';
-			}
-		}, {
-			// fix <br> tags to make xml complient
-			// <br> -> <br />
-			type : 'output',
-			regex : '<br>',
-			replace : '<br />'
-		} ];
-	};
-
-	// Client-side export
-	if (typeof window !== 'undefined' && window.Showdown && window.Showdown.extensions) {
-		window.Showdown.extensions.stuff = stuff;
-	}
-
-	// Server-side export
-	if (typeof module !== 'undefined')
-		module.exports = stuff;
-}());
-
 (function(window, undefined) {
 
 	// Establish the root object, window in the browser, or global on the server.
@@ -89,6 +35,8 @@
 				this.values[key] = initial[key];
 			}
 		}
+
+		return this;
 	};
 
 	Variables.prototype.addValue = function(name, value) {
@@ -118,9 +66,9 @@
 	};
 
 	// Scene private class
-	var Scene = function(id, text) {
+	var Scene = function(id, raw) {
 		this.id = id;
-		this.rawText = text;
+		this.rawText = raw;
 	};
 
 	Scene.prototype.getId = function() {
@@ -132,16 +80,80 @@
 	};
 
 	Scene.prototype.getParsedText = function(vars) {
-		var rawText = this.getRawText();
-		// TODO write text parser for Scene
+		var parsedText = new String(this.getRawText());
+
+		// find each macro and remove until no macros remain
+		while (true) {
+
+			var i = parsedText.indexOf("<<");
+
+			// if no remaining macros, break
+			if (i === -1)
+				break;
+
+			// denotes starting index of macro
+			var startIndex = i;
+
+			// denotes index of first close bracket of macro
+			// macro includes all characters from startIndex through endIndex + 1
+			var endIndex = i = parsedText.indexOf(">>", i);
+
+			// validity testing for macros
+			if (endIndex === -1) {
+				throw "all macros must have open and close bracket";
+			} else if (endIndex < startIndex + 5) {
+				throw "all macros must have a command and content";
+			}
+
+			// parse command
+			var macro = parsedText.substring(startIndex + 2, endIndex);
+
+			console.debug(macro);
+
+			var macroArray = macro.split(" ");
+			var command = macroArray[0];
+
+			console.debug(command);
+
+			var replaceString = "";
+
+			if (command === "print") {
+				if (macroArray.length > 2) 
+					throw "print macros may only have one argument";
+				
+				var arg = macroArray[1];
+				
+				if (arg.charAt(0) === "$") {
+					// retrieve as variable value
+					replaceString = vars.getValue(arg.substring(1));
+					
+				} else {
+					// its a scene
+					replaceString = getSceneParsedText(arg);
+					
+				}
+				
+			} else if (command === "link") {
+
+			} else {
+				eval(macro);
+			}
+
+			// the macros MUST be removed otherwise the loop will never exit
+			parsedText = parsedText.substring(0, startIndex) + replaceString + parsedText.substring(endIndex + 2);
+		}
+
+		return parsedText;
 	};
 
 	Scene.prototype.getParsedTextAsHtml = function(vars) {
 		var parsedText = this.getParsedText(vars);
-		// TODO put parsed text through Markdown converter
+		return converter.makeHtml(parsedText);
 	};
 
-	// Hypertext main stuff
+	// HyperText main stuff
+	var converter = new Showdown.converter();
+
 	var baseUrl = "";
 	var variables = new Variables();
 	var start = null;
@@ -175,7 +187,7 @@
 				sceneText = file.substring(closeIndex + 2, index);
 
 			// add scene to scenes
-			scenes[id] = sceneText
+			scenes[id] = new Scene(id, sceneText);
 		}
 	};
 
@@ -263,6 +275,7 @@
 		for ( var i = 0, len = fileList.length; i < len; i++)
 			loadFileAndParseScenes(fileList[i]);
 
+		// display start screen
 		if (linkHandling == "auto") {
 			if (hasScene("start"))
 				$(display).html(getSceneHtml("start"));
@@ -276,13 +289,24 @@
 		return (typeof scenes[id] !== undefined);
 	};
 
-	var getSceneHtml = HyperText.getSceneHtml = function(id) {
+	var getScene = HyperText.getScene = function(id) {
 		if (hasScene(id)) {
-			// TODO write method to load scene
 			return scenes[id];
 		} else {
 			throw "Scene " + id + " does not exist or has not been loaded";
 		}
+	};
+
+	var getSceneRawText = HyperText.getSceneRawText = function(id) {
+		return getScene(id).getRawText();
+	};
+
+	var getSceneParsedText = HyperText.getSceneParsedText = function(id) {
+		return getScene(id).getParsedText();
+	};
+
+	var getSceneHtml = HyperText.getSceneHtml = function(id) {
+		return getScene(id).getParsedTextAsHtml(variables);
 	};
 
 	// ///////////////////////////////////////////////
