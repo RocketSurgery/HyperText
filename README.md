@@ -32,7 +32,7 @@ The engine uses Markdown syntax for semantic markup, plus special macros to spec
 
 ### Macros
 
-### Syntax
+#### Syntax
 
 All macros are wrapped in double angle-braces, and are started with a command, such as `scene`, `print`, or `if`. Macros may include variables, which are denoted by a preceding `$` character.
 
@@ -51,12 +51,19 @@ Scenes can be dynamically displayed with the `print` macro.
 You can define, manipulate, and print variables using macros.
 
 * `<<define $variable = value>>` - dynamically defines $variable, assigning an initial value is optional.
-* `<<$variable += $stuff>>` - if no macro command is provided, the content within the macro is simply executed as normal. In this case, the value of $stuff would be added to $variable. 
-* `<<print $variable>>` - replaces macro with value of $variable.
+* `<<delete $variable>>` - the delete command will allow you to clear a variable, allowing you to define it again.
+* `<<$variable += $stuff>>` - if no macro command is provided, the content within the macro is simply executed as script. In this case, the value of $stuff would be added to $variable. 
 
 For more complex variable usage, you can provide the engine with an object containing your variables through the `init()` function. You can use this to create more complex variable structures, such as your own classes. For example say you have a 'Character' class, which has a 'name' value. If you have a variable $player which is an instance of 'Character', you could print out the player's name with `<<print $player.name>>`.
 
-### Conditionals
+#### Printing
+
+You can dynamically print variables and scenes using the `print` macro.
+
+* `<<print $variable>>` - print out the value of a variable.
+* `<<print scene>>` - print out the text of a scene. Useful for dynamically displaying large chunks of text.
+
+#### Conditionals
 
 Conditional blocks only display the contained text if their conditions evaluate to true. Conditional block must open with the `if` macro and close with `endif`, and may contain any combination of `elseif` and `else` macros, so long as the `else` macro directly precedes the `endif` macro.
 
