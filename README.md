@@ -63,6 +63,16 @@ You can dynamically print variables and scenes using the `print` macro.
 * `<<print $variable>>` - print out the value of a variable.
 * `<<print scene>>` - print out the text of a scene. Useful for dynamically displaying large chunks of text.
 
+#### Linking
+
+You can link between scenes, as well as track to the previous canonical page.
+
+The behavior behavior for link handling depends on whether you are using automatic or manual link handling. Automatic handling will cause the engine to behave similarly to twine, in that it will display the link as a hypertext link. Manual link handling allows you to choose how the link gets displayed by providing you a list of links on the page and allowing you to display them how you want (this is useful if you want to display your links in a row of buttons, rather than with the text). Manual link handling requires you to still go through the engine when you call the link, ensuring that you can still use the `back` macro correctly.
+
+* `<<link sceneName>>` - creates a link to sceneName, with text "sceneName".
+* `<<link sceneName stuff to display>>` - creates a link to sceneName with text "stuff to display".
+* `<<back>>` - creates a link to the last canonical page.
+
 #### Conditionals
 
 Conditional blocks only display the contained text if their conditions evaluate to true. Conditional block must open with the `if` macro and close with `endif`, and may contain any combination of `elseif` and `else` macros, so long as the `else` macro directly precedes the `endif` macro.
@@ -96,13 +106,13 @@ This is a temporary holding place for the API notes while the engine is in devel
 
 ### Dependencies
 
-HyperText requires jQuery, which you can load globally or with your favorite dependency-loading library.
+HyperText requires jQuery and Showdown, which you can load globally or with your favorite dependency-loading library.
 
-### TextEngine class
+### HyperText class
 
-In order to avoid polluting the global namespace, all of the engine's functionality is wrapped up in the `TextEngine` class.
+In order to avoid polluting the global namespace, all of the engine's functionality is wrapped up in the `HyperText` class.
 
-### Initialization
+#### Initialization
 
 The engine must be initialized with a configuration before it can be used. This must be done by calling `HyperText.init(configuration)`, with `configuration` being an object with the following properties:
 
@@ -116,11 +126,11 @@ The engine must be initialized with a configuration before it can be used. This 
 
 All properties are required unless specified otherwise.
 
-### Scene
+### Scene class
 
 The `HyperText.Scene` class contains all of the information for your various scenes. Scenes are identified by a unique identifier provided in their declaring macro.
 
-#### Functions
+#### Scene functions
 
 * `getId()` - a wrapper for `scene.id`.
 * `getRawText()` - returns unparsed scene text
