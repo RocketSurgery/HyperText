@@ -19,79 +19,38 @@
 		return this;
 	};
 
-	// utility methods
+	// PRIVATE VARIABLES
+	var converter = null;
+
+	var baseUrl = "";
+	var variables = null;
+	var start = null;
+	var fileList = [];
+	var linkHandling = "manual";
+	var linkHandler = null;
+	var display = null;
+	var scenes = {};
+	var history = null;
+	var linkSet = null;
+
+	// PUBLIC VARIABLES
+	HyperText.BACK = "com.github.rocketsurgery.hypertext.BACK";
+
+	// UTILITY PRIVATE METHODS
 	var isFunction = function(functionToCheck) {
 		var getType = {};
 		return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
 	};
 
-	var createDomFromString = function(string) {
-		var div = document.createElement("div");
-		$(div).html(string);
-		$(div).html($(div).html());
-
-		console.debug($(div).html());
-
-		return $(div);
-	};
-
-	// Variables private class
-	var Variables = (function(initial) {
-		this.values = {};
-
-		if (typeof initial !== undefined) {
-			var key = null;
-			for (key in initial) {
-				this.values[key] = initial[key];
-			}
-		}
-
-		return this;
-	});
-
-	Variables.prototype.addValue = function(name, value) {
-		this.values[name] = value;
-	};
-
-	Variables.prototype.addValues = function(values) {
-		var key = null;
-		for (key in initial) {
-			this.values[key] = initial[key];
-		}
-	};
-
-	Variables.prototype.setValue = function(name, value) {
-		this.values[name] = value;
-	};
-
-	Variables.prototype.setValues = function(values) {
-		var key = null;
-		for (key in initial) {
-			this.values[key] = initial[key];
-		}
-	};
-
-	Variables.prototype.getValue = function(name) {
-		return this.values[name];
-	};
-
-	// Scene private class
-	var Scene = (function(id, raw) {
-		this.id = id;
-		this.rawText = raw;
-	});
-
-	Scene.prototype.getId = function() {
-		return this.id;
-	};
-
-	Scene.prototype.getRawText = function() {
-		return this.rawText;
-	};
-
 	var parseText = function(rawText, vars) {
 
-		var parsedText = new String(rawText);
+		// rename text for simplicity's sake
+		var parsedText = rawText;
+
+		// TODO - once recursive parsing is implemented, this is going to break. FIX THIS SO IT DOESN'T EXPLODE!
+		if (linkHandling === "manual") {
+			linkSet = new LinkSet();
+		}
 
 		// find each macro and remove until no macros remain
 		while (true) {
@@ -119,16 +78,13 @@
 			// parse command
 			var macro = parsedText.substring(startIndex + 2, endIndex);
 
-			console.debug(macro);
-
 			var macroArray = macro.split(" ");
 			var command = macroArray[0];
 
-			console.debug(command);
-
 			var replaceString = "";
 
-			if (command === "print") {
+			switch (command) {
+			case "print":
 				if (macroArray.length > 2)
 					throw "print macros may only have one argument";
 
@@ -143,21 +99,22 @@
 					replaceString = getSceneParsedText(arg);
 
 				}
-
-			} else if (command === "link") {
-				console.debug("link found to " + macroArray[1])
+				break;
+			case "link":
 				if (linkHandling === "automatic") {
 					replaceString = '<a href="' + macroArray[1] + '" class="handled">' + macroArray[1] + '</a>';
 				} else {
-					// TODO write macro parsing for manual links
+					linkSet.addLink(macroArray[1], macro);
 				}
-			} else if (command === "back") {
+				break;
+			case "back":
 				if (linkHandling === "automatic") {
 					replaceString = '<a href="back" class="handled" id="back">back</a>';
 				} else {
-					// TODO write macro parsing for manual back
+					linkSet.back = true;
 				}
-			} else {
+				break;
+			default:
 				eval(macro);
 			}
 
@@ -165,66 +122,10 @@
 			parsedText = parsedText.substring(0, startIndex) + replaceString + parsedText.substring(endIndex + 2);
 		}
 
-		console.debug(parsedText);
+		// console.debug(parsedText);
 
 		return parsedText;
 	};
-
-	Scene.prototype.getParsedText = function(vars) {
-		return parseText(this.getRawText(), vars);
-	};
-
-	Scene.prototype.getParsedTextAsHtml = function(vars) {
-		var parsedText = this.getParsedText(vars);
-		var html = converter.makeHtml(parsedText);
-
-		return html;
-	};
-
-	// History private class
-	var History = (function() {
-		this.stack = [];
-		this.current = null;
-		return this;
-	});
-
-	History.prototype.pushScene = function(sceneId) {
-		if (this.current === null) {
-			this.current = sceneId;
-		} else {
-			this.stack.push(this.current);
-			this.current = sceneId;
-		}
-	};
-
-	History.prototype.popScene = function() {
-		if (this.current === null) {
-			throw "cannot pop from an empty history";
-		} else if (this.stack.length === 0) {
-			this.current = null;
-		} else {
-			this.current = this.stack.pop();
-		}
-		return this.current;
-	};
-
-	History.prototype.clearHistory = function() {
-		this.stack = [];
-	};
-
-	// HyperText main stuff
-	var converter = null;
-
-	var baseUrl = "";
-	var variables = new Variables();
-	var start = null;
-	var startScene = null;
-	var fileList = [];
-	var linkHandling = "manual";
-	var linkHandler = null;
-	var display = null;
-	var scenes = {};
-	var history = null;
 
 	var parseScenesFromFile = function(file) {
 
@@ -273,7 +174,114 @@
 		});
 	};
 
-	var init = HyperText.init = function(config) {
+	// Variables private class
+	var Variables = function(initial) {
+		this.values = {};
+
+		if (typeof initial !== undefined) {
+			var key = null;
+			for (key in initial) {
+				this.values[key] = initial[key];
+			}
+		}
+	};
+
+	Variables.prototype.addValue = function(name, value) {
+		this.values[name] = value;
+	};
+
+	Variables.prototype.addValues = function(values) {
+		var key = null;
+		for (key in initial) {
+			this.values[key] = initial[key];
+		}
+	};
+
+	Variables.prototype.setValue = function(name, value) {
+		this.values[name] = value;
+	};
+
+	Variables.prototype.setValues = function(values) {
+		var key = null;
+		for (key in initial) {
+			this.values[key] = initial[key];
+		}
+	};
+
+	Variables.prototype.getValue = function(name) {
+		return this.values[name];
+	};
+
+	// Scene private class
+	var Scene = function(id, raw) {
+		this.id = id;
+		this.rawText = raw;
+	};
+
+	Scene.prototype.getId = function() {
+		return this.id;
+	};
+
+	Scene.prototype.getRawText = function() {
+		return this.rawText;
+	};
+
+	Scene.prototype.getParsedText = function(vars) {
+		return parseText(this.getRawText(), vars);
+	};
+
+	Scene.prototype.getParsedTextAsHtml = function(vars) {
+		var parsedText = this.getParsedText(vars);
+		var html = converter.makeHtml(parsedText);
+
+		return html;
+	};
+
+	// History private class
+	var History = function() {
+		this.stack = [];
+		this.current = null;
+	};
+
+	History.prototype.pushScene = function(sceneId) {
+		if (this.current === null) {
+			this.current = sceneId;
+		} else {
+			this.stack.push(this.current);
+			this.current = sceneId;
+		}
+	};
+
+	History.prototype.popScene = function() {
+		if (this.current === null) {
+			throw "cannot pop from an empty history";
+		} else if (this.stack.length === 0) {
+			this.current = null;
+		} else {
+			this.current = this.stack.pop();
+		}
+		return this.current;
+	};
+
+	// LinkSet private class
+	var LinkSet = function() {
+		this.links = [];
+		this.back = false;
+	};
+
+	LinkSet.prototype.addLink = function(sceneId, linkText) {
+		this.links.push({
+			scene : sceneId,
+			text : linkText
+		});
+	};
+
+	LinkSet.prototype.numLinks = function() {
+		return this.links.length;
+	};
+
+	// HyperText main functions
+	HyperText.init = function(config) {
 
 		// I - read values from config
 		// I.a - get baseUrl
@@ -334,25 +342,23 @@
 		}
 
 		// II - initialize variables
+		variables = new Variables();
 		history = new History();
 		converter = new Showdown.converter();
 
 		// III - perform final setup
 		// III.a - load start file
 		loadFileAndParseScenesSync(start);
+		if (!hasScene("start")) {
+			throw "starting file must contain a scene with id 'start'.";
+		}
 
 		// III.b - load remaining files
 		for ( var i = 0, len = fileList.length; i < len; i++)
 			loadFileAndParseScenes(fileList[i]);
 
 		// III.c - display start screen
-		if (linkHandling == "automatic") {
-			if (hasScene("start")) {
-				displayScene("start");
-			} else {
-				throw "starting file must contain a scene with id 'start'.";
-			}
-		}
+		displayScene("start");
 
 	};
 
@@ -368,11 +374,7 @@
 		}
 	};
 
-	var getSceneRawText = HyperText.getSceneRawText = function(id) {
-		return getScene(id).getRawText();
-	};
-
-	var getSceneParsedText = HyperText.getSceneParsedText = function(id) {
+	HyperText.getSceneParsedText = function(id) {
 		return getScene(id).getParsedText();
 	};
 
@@ -380,7 +382,9 @@
 		return getScene(id).getParsedTextAsHtml(variables);
 	};
 
-	var displayScene = function(sceneId) {
+	var displayScene = HyperText.displayScene = function(sceneId) {
+		console.debug("displaying: " + sceneId);
+		
 		// I - display linked scene
 		// I.a - clear display frame
 		display.html("");
@@ -393,26 +397,33 @@
 		history.pushScene(sceneId);
 
 		// II.b - add link handler to new scene links
-		$("a").click(function(e) {
-			linkHandler(e);
-			e.stopPropagation();
-			e.preventDefault();
-		});
-		console.debug("link handler set");
-	};
-
-	var linkHandler = function(e) {
-		if ($(e.target).attr("id") === "back") {
-			displayScene(history.popScene());
+		if (linkHandling === "automatic") {
+			$("a").click(function(e) {
+				HyperText.linkHandler(e);
+				e.stopPropagation();
+				e.preventDefault();
+			});
 		} else {
-			var targetScene = $(e.target).attr("href");
-			displayScene(targetScene);
+			linkHandler(linkSet);
 		}
-	};
 
-	var back = HyperText.back = function() {
-		var scene = history.popScene();
-		linkHandler(scene);
+	};
+	
+	HyperText.linkHandler = function(e) {
+		if (linkHandling === "automatic") {
+			if ($(e.target).attr("id") === "back") {
+				displayScene(history.popScene());
+			} else {
+				var targetScene = $(e.target).attr("href");
+				displayScene(targetScene);
+			}
+		} else {
+			if (e === HyperText.BACK) {
+				displayScene(history.popScene());
+			} else {
+				displayScene(e);
+			}
+		}
 	};
 
 	// ///////////////////////////////////////////////

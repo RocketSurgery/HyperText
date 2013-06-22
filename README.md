@@ -67,7 +67,9 @@ You can dynamically print variables and scenes using the `print` macro.
 
 You can link between scenes, as well as track to the previous canonical page.
 
-The behavior behavior for link handling depends on whether you are using automatic or manual link handling. Automatic handling will cause the engine to behave similarly to twine, in that it will display the link as a hypertext link. Manual link handling allows you to choose how the link gets displayed by providing you a list of links on the page and allowing you to display them how you want (this is useful if you want to display your links in a row of buttons, rather than with the text). Manual link handling requires you to still go through the engine when you call the link, ensuring that you can still use the `back` macro correctly.
+The behavior behavior for link handling depends on whether you are using automatic or manual link handling. Automatic handling will cause the engine to behave similarly to twine, in that it will display the link as a hypertext link. Manual link handling allows you to choose how the link gets displayed by providing you a list of links on the page and allowing you to display them how you want (this is useful if you want to display your links in a row of buttons, rather than with the text).
+
+Manual link handling requires you to provide a callback method, which must in turn call `HyperText.linkHandler(e)` in order to display the new scene. The callback method is used primarily to allow you to display the links in a scene outside of the display frame.
 
 * `<<link sceneName>>` - creates a link to sceneName, with text "sceneName".
 * `<<link sceneName stuff to display>>` - creates a link to sceneName with text "stuff to display".
@@ -125,6 +127,10 @@ The engine must be initialized with a configuration before it can be used. This 
 * `display` - the DOM object you want to use as the wrapper for you game's output. This is used primarily for allowing the engine to automatically display your scenes.
 
 All properties are required unless specified otherwise.
+
+#### Functions
+
+* `HyperText.getSceneParsedText(sceneId)` - returns the markdown of the scene with the macros parsed out. Useful if the user wants to parse the markdown with their own parser. This functionality will not be implemented until a later version of the engine.
 
 ### Scene class
 
