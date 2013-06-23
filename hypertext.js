@@ -130,8 +130,8 @@
 			}
 
 			// evaluate current macro
-			var cond = (current.command === "if" || current.command === "elseif") ? evalConditionalString(
-					current.content) : true;
+			var cond = (current.command === "if" || current.command === "elseif") ? evalConditionalString(current.content)
+					: true;
 			if (cond) {
 				return parseText(condText.substring(current.endIndex, end.startIndex));
 			}
@@ -312,30 +312,28 @@
 		return html;
 	};
 
-	// History private class
-	var History = function() {
-		this.stack = [];
-		this.current = null;
+	var pushHistory = function(sceneId) {
+		if (!hasScene(sceneId)) {
+			throw {
+				name : "illegal argument exception",
+				message : "cannot push name of scene that doesn't exist"
+			};
+		}
+		history.push(sceneId);
 	};
 
-	History.prototype.pushScene = function(sceneId) {
-		if (this.current === null) {
-			this.current = sceneId;
-		} else {
-			this.stack.push(this.current);
-			this.current = sceneId;
+	var popHistory = function() {
+		if (history.length === 0) {
+			throw {
+				name : "stack exception",
+				message : "cannot pop from an empty history"
+			};
+		} else if (history.length === 1) {
+			history.pop();
+			return null;
 		}
-	};
-
-	History.prototype.popScene = function() {
-		if (this.current === null) {
-			throw "cannot pop from an empty history";
-		} else if (this.stack.length === 0) {
-			this.current = null;
-		} else {
-			this.current = this.stack.pop();
-		}
-		return this.current;
+		history.pop();
+		return(history[history.length - 1])
 	};
 
 	// LinkSet private class
@@ -419,7 +417,7 @@
 		}
 
 		// II - initialize variables
-		history = new History();
+		history = [];
 		converter = new Showdown.converter();
 
 		// III - perform final setup
@@ -472,7 +470,7 @@
 
 		// II - background handling
 		// II.a - push new scene to history
-		history.pushScene(sceneId);
+		pushHistory(sceneId);
 
 		// II.b - add link handler to new scene links
 		if (linkHandling === "automatic") {
@@ -490,14 +488,14 @@
 	HyperText.linkHandler = function(e) {
 		if (linkHandling === "automatic") {
 			if ($(e.target).attr("id") === "back") {
-				displayScene(history.popScene());
+				displayScene(popHistory());
 			} else {
 				var targetScene = $(e.target).attr("href");
 				displayScene(targetScene);
 			}
 		} else {
 			if (e === HyperText.BACK) {
-				displayScene(history.popScene());
+				displayScene(popHistory());
 			} else {
 				displayScene(e);
 			}
