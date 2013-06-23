@@ -25,8 +25,8 @@
 	var variables = null;
 	var start = null;
 	var fileList = [];
-	var linkHandling = "manual";
-	var linkHandler = null;
+	var linkDisplay = "manual";
+	var linkDisplayHandler = null;
 	var display = null;
 	var scenes = {};
 	var history = null;
@@ -176,7 +176,7 @@
 					var linkText = linkArray.join(" ");
 				}
 
-				if (linkHandling === "automatic") {
+				if (linkDisplay === "automatic") {
 					replaceString = '<a href="' + linkTarget + '" class="handled">' + linkText + '</a>';
 				} else {
 					linkSet.addLink(linkTarget, macro.content);
@@ -187,7 +187,7 @@
 				if (macro.content !== "") {
 					backText = macro.content;
 				}
-				if (linkHandling === "automatic") {
+				if (linkDisplay === "automatic") {
 					replaceString = '<a href="back" class="handled" id="back">' + backText + '</a>';
 				} else {
 					linkSet.back = true;
@@ -333,7 +333,7 @@
 			return null;
 		}
 		history.pop();
-		return(history[history.length - 1])
+		return (history[history.length - 1])
 	};
 
 	// LinkSet private class
@@ -393,19 +393,19 @@
 			throw "config must have a value 'files', which must be an array of strings with addresses to your story files.";
 		}
 
-		// I.e - get linkHandling
-		if (typeof config.linkHandling !== undefined) {
-			linkHandling = config.linkHandling;
-			if (linkHandling !== "manual" && linkHandling !== "automatic")
-				throw "if config has a value for 'linkHandling', its value must be either 'manual' or 'automatic'.";
+		// I.e - get linkDisplay
+		if (typeof config.linkDisplay !== undefined) {
+			linkDisplay = config.linkDisplay;
+			if (linkDisplay !== "manual" && linkDisplay !== "automatic")
+				throw "if config has a value for 'linkDisplay', its value must be either 'manual' or 'automatic'.";
 		}
 
-		// I.f - get linkHandler
-		if (linkHandling === "manual") {
-			if (typeof config.linkHandler !== undefined && isFunction(config.linkHandler)) {
-				linkHandler = config.linkHandler;
+		// I.f - get linkDisplayHandler
+		if (linkDisplay === "manual") {
+			if (typeof config.linkDisplayHandler !== undefined && isFunction(config.linkDisplayHandler)) {
+				linkDisplayHandler = config.linkDisplayHandler;
 			} else {
-				throw "if 'manual' is chosen for 'linkHandling', a function must be provided for 'linkHandler'.";
+				throw "if 'manual' is chosen for 'linkDisplay', a function must be provided for 'linkDisplayHandler'.";
 			}
 		}
 
@@ -464,7 +464,7 @@
 		display.html("");
 
 		// I.b - display next scene
-		if (linkHandling === "manual")
+		if (linkDisplay === "manual")
 			linkSet = new LinkSet();
 		display.html(getSceneHtml(sceneId));
 
@@ -473,20 +473,20 @@
 		pushHistory(sceneId);
 
 		// II.b - add link handler to new scene links
-		if (linkHandling === "automatic") {
+		if (linkDisplay === "automatic") {
 			$("a").click(function(e) {
 				e.stopPropagation();
 				e.preventDefault();
 				HyperText.linkHandler(e);
 			});
 		} else {
-			linkHandler(linkSet);
+			linkDisplayHandler(linkSet);
 		}
 
 	};
 
 	HyperText.linkHandler = function(e) {
-		if (linkHandling === "automatic") {
+		if (linkDisplay === "automatic") {
 			if ($(e.target).attr("id") === "back") {
 				displayScene(popHistory());
 			} else {
