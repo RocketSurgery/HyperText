@@ -141,7 +141,7 @@
 				break;
 			current = end;
 		}
-		
+
 		return "";
 	};
 
@@ -168,17 +168,30 @@
 				}
 				break;
 			case "link":
+				var linkArray = macro.content.split(" ");
+				var linkTarget = linkArray[0];
+				var linkText = linkTarget;
+				if (linkArray.length > 1) {
+					linkArray.splice(0, 1);
+					var linkText = linkArray.join(" ");
+				}
+
 				if (linkHandling === "automatic") {
-					replaceString = '<a href="' + macro.content + '" class="handled">' + macro.content + '</a>';
+					replaceString = '<a href="' + linkTarget + '" class="handled">' + linkText + '</a>';
 				} else {
-					linkSet.addLink(macro.content, macro.content);
+					linkSet.addLink(linkTarget, macro.content);
 				}
 				break;
 			case "back":
+				var backText = "Back";
+				if (macro.content !== "") {
+					backText = macro.content;
+				}
 				if (linkHandling === "automatic") {
-					replaceString = '<a href="back" class="handled" id="back">back</a>';
+					replaceString = '<a href="back" class="handled" id="back">' + backText + '</a>';
 				} else {
 					linkSet.back = true;
+					linkSet.backText = backText;
 				}
 				break;
 			case "if":
@@ -493,9 +506,9 @@
 		// II.b - add link handler to new scene links
 		if (linkHandling === "automatic") {
 			$("a").click(function(e) {
-				HyperText.linkHandler(e);
 				e.stopPropagation();
 				e.preventDefault();
+				HyperText.linkHandler(e);
 			});
 		} else {
 			linkHandler(linkSet);
