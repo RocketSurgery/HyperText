@@ -83,11 +83,11 @@
 		};
 	};
 
-	var evalConditionalString = function(condText, vars) {
+	var evalConditionalString = function(condText) {
 		var condArray = condText.split(" ");
 		for ( var i = 0; i < condArray.length; i++) {
 			if (condArray[i].charAt(0) === "$") {
-				condArray[i] = "vars.getValue('" + condArray[i].substring(1) + "')";
+				condArray[i] = "variables.pvalues." + condArray[i].substring(1);
 			}
 		}
 		condText = condArray.join(" ");
@@ -95,7 +95,7 @@
 		return eval(condText);
 	};
 
-	var parseConditional = function(condText, vars) {
+	var parseConditional = function(condText) {
 
 		var current = findNextMacro(condText, 0);
 
@@ -131,9 +131,9 @@
 
 			// evaluate current macro
 			var cond = (current.command === "if" || current.command === "elseif") ? evalConditionalString(
-					current.content, vars) : true;
+					current.content) : true;
 			if (cond) {
-				return parseText(condText.substring(current.endIndex, end.startIndex), vars);
+				return parseText(condText.substring(current.endIndex, end.startIndex));
 			}
 
 			// else, move on to next conditional section
@@ -145,7 +145,7 @@
 		return "";
 	};
 
-	var parseText = function(rawText, vars) {
+	var parseText = function(rawText) {
 
 		// rename text for simplicity's sake
 		var parsedText = rawText;
@@ -162,7 +162,7 @@
 			switch (macro.command) {
 			case "print":
 				if (macro.content.charAt(0) === "$") {
-					replaceString = vars.getValue(macro.content.substring(1));
+					replaceString = variables.pvalues[macro.content.substring(1)];
 				} else {
 					replaceString = getSceneParsedText(macro.content);
 				}
@@ -219,7 +219,7 @@
 				macro.startIndex = startMacro.startIndex;
 
 				// call special recursive function for parsing conditional branches
-				replaceString = parseConditional(parsedText.substring(macro.startIndex, macro.endIndex), vars);
+				replaceString = parseConditional(parsedText.substring(macro.startIndex, macro.endIndex));
 
 				break;
 			default:
@@ -285,37 +285,6 @@
 			},
 			async : true
 		});
-	};
-
-	// Variables private class
-	var Variables = function(initial) {
-		this.values = initial;
-	};
-
-	Variables.prototype.addValue = function(name, value) {
-		this.values[name] = value;
-	};
-
-	Variables.prototype.addValues = function(values) {
-		var key = null;
-		for (key in initial) {
-			this.values[key] = initial[key];
-		}
-	};
-
-	Variables.prototype.setValue = function(name, value) {
-		this.values[name] = value;
-	};
-
-	Variables.prototype.setValues = function(values) {
-		var key = null;
-		for (key in initial) {
-			this.values[key] = initial[key];
-		}
-	};
-
-	Variables.prototype.getValue = function(name) {
-		return this.values[name];
 	};
 
 	// Scene private class
@@ -400,7 +369,9 @@
 
 		// I.b - get variables object
 		if (typeof config.variables !== undefined) {
-			variables = new Variables(config.variables);
+			variables = {
+				pvalues : config.variables
+			};
 		}
 
 		// I.c - get start scene
