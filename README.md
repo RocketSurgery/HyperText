@@ -4,9 +4,29 @@ An HTML5 game engine for creating text-based games. It is currently in developme
 
 ## About
 
-The idea behind HyperText is, like Twine and TiddlyWiki before it, to simplify the work of making a non-linear story by taking most of the work in the background out of you hands, making it easier for you to focus on the writing and storytelling. However, HyperText seeks to expand on the Twine model by creating a more customizable, extensible, game-oriented engine.
+The idea behind HyperText is, like Twine and TiddlyWiki before it, to simplify the work of making a non-linear story by taking most of the work in the background out of you hands, making it easier for you to focus on the writing and storytelling. However, where twine seeks to be a tool for writing non-linear stories, HyperText seeks to be a tool for designing text-based games. As such, it acts like a more cut-down, customizable, extensible version of Twine.
+
+When making a text-based game, the last thing you want to do is put the text in your code, but writing the engine to parse text out of your source files and display it the way you want can be difficult and derail your work process. HyperText provides the basic functionality of source loading and macro parsing, which allows you to skip straight to designing your gameplay and writing your text.
 
 ## Usage
+
+### Initialization
+
+The engine must be initialized with a configuration before it can be used. This must be done by calling `HyperText.init(configuration)`, with `configuration` being an object with the following properties:
+
+* `baseUrl` - the base url for your story files. This is an optional attribute.
+* `variables` - an object containing any additional variables you would like to reference in your macros.
+* `start` - the url for the file containing the 'Start' scene. This scene will be loaded synchronously and will be available for display while the other resources are loaded.
+* `files` - an array containing the urls for your story files. The engine will load the files and parse the scenes.
+* `linkHandling` - either `"automatic"` or `"manual"`. Automatic handling requires that you provide a value for `display`, and the engine will automatically follow links and change what text is displayed, a la Twine. If no value is provided, the engine will default to manual handling, and will require a link handler.
+* `linkHandler` - if you are manually handling links, you must provide the function which will be called when a link is clicked.
+* `display` - the DOM object you want to use as the wrapper for you game's output. This is used primarily for allowing the engine to automatically display your scenes.
+
+All properties are required unless specified otherwise.
+
+### Displaying Scenes
+
+To display a scene you call `HyperText.display(sceneId [, outputLoc])`. If you provided a default output location during initialization, that will be the location provided, otherwise you can provide and output location for the text.
 
 ### Stories and Scenes
 
@@ -52,7 +72,7 @@ You can define, manipulate, and print variables using macros.
 
 * `<<define $variable = value>>` - dynamically defines $variable, assigning an initial value is optional.
 * `<<delete $variable>>` - the delete command will allow you to clear a variable, allowing you to define it again.
-* `<<$variable += $stuff>>` - if no macro command is provided, the content within the macro is simply executed as script. In this case, the value of $stuff would be added to $variable. 
+* `<< $variable += $stuff >>` - if no macro command is provided, the content within the macro is simply executed as script. In this case, the value of $stuff would be added to $variable. NOTE: you must leave a space after the `<<` otherwise the engine will be angry with you.
 
 For more complex variable usage, you can provide the engine with an object containing your variables through the `init()` function. You can use this to create more complex variable structures, such as your own classes. For example say you have a 'Character' class, which has a 'name' value. If you have a variable $player which is an instance of 'Character', you could print out the player's name with `<<print $player.name>>`.
 
@@ -106,48 +126,11 @@ HyperText is heavily based off of Twine/Twee.
 
 This is a temporary holding place for the API notes while the engine is in development.
 
-### Dependencies
+### Text Parsing and Output
 
-HyperText requires jQuery and Showdown, which you can load globally or with your favorite dependency-loading library.
+When a scene needs to be displayed, `parseSceneAndOutputText(sceneText)` is called. This method takes in the scene rawtext and parses out the macros, pushing the parsed rawtext to an output function. The parsing function, when it finds a macro it passes the macro and a parser object, which contains the source text and the parser's current position in the text.
 
-### HyperText class
-
-In order to avoid polluting the global namespace, all of the engine's functionality is wrapped up in the `HyperText` class.
-
-#### Initialization
-
-The engine must be initialized with a configuration before it can be used. This must be done by calling `HyperText.init(configuration)`, with `configuration` being an object with the following properties:
-
-* `baseUrl` - the base url for your story files. This is an optional attribute.
-* `variables` - an object containing any additional variables you would like to reference in your macros.
-* `start` - the url for the file containing the 'Start' scene. This scene will be loaded synchronously and will be available for display while the other resources are loaded.
-* `files` - an array containing the urls for your story files. The engine will load the files and parse the scenes.
-* `linkHandling` - either `"automatic"` or `"manual"`. Automatic handling requires that you provide a value for `display`, and the engine will automatically follow links and change what text is displayed, a la Twine. If no value is provided, the engine will default to manual handling, and will require a link handler.
-* `linkHandler` - if you are manually handling links, you must provide the function which will be called when a link is clicked.
-* `display` - the DOM object you want to use as the wrapper for you game's output. This is used primarily for allowing the engine to automatically display your scenes.
-
-All properties are required unless specified otherwise.
-
-#### Functions
-
-* `HyperText.getSceneParsedText(sceneId)` - returns the markdown of the scene with the macros parsed out. Useful if the user wants to parse the markdown with their own parser. This functionality will not be implemented until a later version of the engine.
-
-### Scene class
-
-The `HyperText.Scene` class contains all of the information for your various scenes. Scenes are identified by a unique identifier provided in their declaring macro.
-
-#### Scene functions
-
-* `getId()` - a wrapper for `scene.id`.
-* `getRawText()` - returns unparsed scene text
-* `getParsedText(vars)` - returns the scene text with the macros parsed out. Does not convert scene to html or remove markdown formatting.
-* `getParsedTextAsHtml(vars)` - returns the scene text with the macros parsed out and the markdown converted to html.
-
-### Variables
-
-The `HyperText.Variables` class manages the variables used in your games, including those you declare dynamically with macros, and allows you to access and manipulate those variables. Values are declared and stored as standard javascript values, so anything that is permissible under standard javascript is allowed in Hypertext.
-
-This means that variables may be simple objects, arrays, or even functions, so long as you access them appropriately for their type (access functions with a round braces, don't try to access a property that an object doesn't have, etc.). 
+The macros variable contains an object for each of the macro commands, each of which has a `handler` function. This function will output the appropriate text for the macro and, if necessary, push the parser cursor forward to bypass the rest of the macro (as in the case of if-endif macro pairs, where the parser must move past the entire macro set).
 
 ## Future Development
 

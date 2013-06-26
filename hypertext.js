@@ -3,46 +3,157 @@
 	// Establish the root object, window in the browser, or global on the server.
 	var root = window;
 
-	// saves previous version of HyperText for noConflict mode
-	var _HyperText = root.HyperText;
-
 	// The top-level namespace. All public HyperText classes and modules will
 	// be attached to this.
-	var HyperText = function() {
-	};
-
-	// Runs HyperText.js in *noConflict* mode, returning the HyperText variable
-	// to its previous owner. Returns a reference to this HyperText object.
-	HyperText.noConflict = function() {
-		root.HyperText = _HyperText;
-		return this;
-	};
+	var HyperText = (function() {
+		return {};
+	});
 
 	// PRIVATE VARIABLES
-	var converter = null;
 
+	// configuration variables
 	var baseUrl = "";
 	var variables = null;
-	var start = null;
 	var fileList = [];
-	var linkDisplay = "manual";
-	var linkDisplayHandler = null;
 	var display = null;
+
+	// engine variables
+	var formatter = null;
 	var scenes = {};
 	var history = null;
 	var linkSet = null;
+
+	// DEFAULT MACROS
+	var macros = HyperText.macros = {};
+
+	macros['print'] = {
+		handler : function(macro, parser) {
+
+			// VALIDITY CHECKING
+			if (macro.params.length !== 1) {
+				throw new Error("print macro must have exactly one parameter");
+			}
+
+			// get value to output
+			if (macro.params[0].charAt(0) === "$") {
+				// print variable
+				var value = variables.values[macro.params[0].substring(1)];
+				// TODO output inline value
+			} else {
+				// print scene
+				// TODO output scene content
+			}
+		}
+	};
+
+	macros['if'] = {
+		handler : function(macro, parser) {
+
+			var current = macro;
+
+			// find correct text block
+			while (true) {
+
+				// find closing macro
+				var end = parser.findNextMacro(current.endIndex);
+				while (true) {
+					if (end.command === "elseif" || end.command === "else" || end.command === "endif") {
+						break;
+					} else if (end.command === "if") {
+
+						// parse out of nested if blocks
+						// after loop, end will be set to the endif corresponding to the previous if macro
+						var depth = 0;
+						end = parser.findNextMacro(end.endIndex);
+						while (true) {
+							if (depth === 0 && end.command === "endif") {
+								break;
+							} else if (end.command === "endif") {
+								depth--;
+							} else if (end.command === "if") {
+								depth++;
+							}
+
+							end = parser.findNextMacro(end.endIndex);
+						}
+					}
+
+					end = parser.findNextMacro(end.endIndex);
+				}
+
+				// evaluate current macro
+				var cond = (current.command === "if" || current.command === "elseif") ? evalConditionalString(current.params
+						.join(" "))
+						: true;
+				if (cond) {
+					parseAndOutputSceneText(condText.substring(current.endIndex, end.startIndex));
+					return;
+				}
+
+				// else, move on to next conditional section
+				if (end.command === "endif")
+					break;
+				current = end;
+			}
+		}
+	};
+
+	macros['link'] = {
+		handler : function(macro, parser) {
+
+			// VALIDITY CHECKING
+			if (macro.params.length < 1) {
+				throw new Error("link macro must have at least one argument");
+			}
+
+			var link = document.createElement("a");
+			link.href = "javascript:void(0)";
+			link.className = 'internalLink';
+
+			if (macro.params.length === 1) {
+				link.innerHTML = macro.params[0];
+			} else {
+				link.innerHTML = macro.params.slice(1, macro.params.length).splice(" ");
+			}
+
+			link.onclick = function() {
+				macros['link'].execute(link, macro.params[0]);
+			};
+
+			// TODO output link
+
+		},
+		execute : function(link, target) {
+			// TODO write link execute behavior
+			parseAndOutputScene(target);
+		}
+	};
+
+	macros['back'] = {
+		handler : function(macro, parser) {
+			var link = document.createElement("a");
+			link.href = "javascript:void(0)";
+			link.onclick = function() {
+				macros['back'].execute();
+			};
+		},
+		execute : function() {
+			// TODO write back link execute behavior
+		}
+	};
 
 	// PUBLIC VARIABLES
 	HyperText.BACK = "com.github.rocketsurgery.hypertext.BACK";
 
 	// UTILITY PRIVATE METHODS
-	var isFunction = function(functionToCheck) {
-		var getType = {};
-		return functionToCheck && getType.toString.call(functionToCheck) === '[object Function]';
-	};
 
-	var findNextMacro = function(rawText, startIndex) {
-		var i = rawText.indexOf("<<", startIndex);
+	var Parser = function(source) {
+		this.source = source;
+		this.current = 0;
+	};
+	
+	Parser.prototype.findNextMacro = function(startIndex) {
+		var i = this.source.indexOf("<<", startIndex);
 
 		// if no remaining macros, return null
 		if (i === -1)
@@ -53,7 +164,7 @@
 
 		// denotes index of first close bracket of macro
 		// macro includes all characters from startIndex through endIndex + 1
-		var endIndex = i = rawText.indexOf(">>", i);
+		var endIndex = i = this.source.indexOf(">>", i);
 
 		// validity testing for macros
 		if (endIndex === -1) {
@@ -69,21 +180,22 @@
 		}
 
 		// parse macro text
-		var content = rawText.substring(startIndex + 2, endIndex);
+		var content = this.source.substring(startIndex + 2, endIndex);
 
 		var macroArray = content.split(" ");
 		var command = macroArray[0];
 		content = content.substring(command.length + 1);
+		var params = content.split(" ");
 
 		return {
 			command : command,
-			content : content,
+			params : params,
 			startIndex : startIndex,
 			endIndex : endIndex + 2
 		};
 	};
 
-	var evalConditionalString = function(condText) {
+	Parser.evalConditionalString = function(condText) {
 		var condArray = condText.split(" ");
 		for ( var i = 0; i < condArray.length; i++) {
 			if (condArray[i].charAt(0) === "$") {
@@ -95,7 +207,7 @@
 		return eval(condText);
 	};
 
-	var parseConditional = function(condText) {
+	Parser.parseConditional = function(condText) {
 
 		var current = findNextMacro(condText, 0);
 
@@ -145,101 +257,6 @@
 		return "";
 	};
 
-	var parseText = function(rawText) {
-
-		// rename text for simplicity's sake
-		var parsedText = rawText;
-
-		// find each macro and remove until no macros remain
-		while (true) {
-
-			var macro = findNextMacro(parsedText, 0);
-			if (macro === null)
-				break;
-
-			var replaceString = "";
-
-			switch (macro.command) {
-			case "print":
-				if (macro.content.charAt(0) === "$") {
-					replaceString = variables.pvalues[macro.content.substring(1)];
-				} else {
-					replaceString = getSceneParsedText(macro.content);
-				}
-				break;
-			case "link":
-				var linkArray = macro.content.split(" ");
-				var linkTarget = linkArray[0];
-				var linkText = linkTarget;
-				if (linkArray.length > 1) {
-					linkArray.splice(0, 1);
-					var linkText = linkArray.join(" ");
-				}
-
-				if (linkDisplay === "automatic") {
-					replaceString = '<a href="' + linkTarget + '" class="handled">' + linkText + '</a>';
-				} else {
-					linkSet.addLink(linkTarget, macro.content);
-				}
-				break;
-			case "back":
-				var backText = "Back";
-				if (macro.content !== "") {
-					backText = macro.content;
-				}
-				if (linkDisplay === "automatic") {
-					replaceString = '<a href="back" class="handled" id="back">' + backText + '</a>';
-				} else {
-					linkSet.back = true;
-					linkSet.backText = backText;
-				}
-				break;
-			case "if":
-				// if macro
-				var startMacro = macro;
-
-				// find endif macro
-				var ifDepth = 0;
-
-				macro = findNextMacro(parsedText, macro.endIndex);
-				while (true) {
-					if (macro.command === "if") {
-						ifDepth++;
-					} else if (macro.command === "endif") {
-						if (ifDepth === 0) {
-							break;
-						} else {
-							ifDepth--;
-						}
-					}
-					macro = findNextMacro(parsedText, macro.endIndex);
-				}
-
-				// set macro values so string replacing works properly
-				macro.startIndex = startMacro.startIndex;
-
-				// call special recursive function for parsing conditional branches
-				replaceString = parseConditional(parsedText.substring(macro.startIndex, macro.endIndex));
-
-				break;
-			default:
-				// eval(macro);
-				throw {
-					name : "illegal argument exception",
-					message : "unknown macro found"
-				};
-			}
-
-			// the macros MUST be removed otherwise the loop will never exit
-			parsedText = parsedText.substring(0, macro.startIndex) + replaceString
-					+ parsedText.substring(macro.endIndex);
-		}
-
-		// console.debug(parsedText);
-
-		return parsedText;
-	};
-
 	var parseScenesFromFile = function(file) {
 
 		file = new String(file);
@@ -268,23 +285,59 @@
 	};
 
 	var loadFileAndParseScenesSync = function(URL) {
-		$.ajax({
-			url : URL,
-			success : function(result) {
-				parseScenesFromFile(result);
-			},
-			async : false
-		});
+		var oReq = new XMLHttpRequest();
+		oReq.onload = function() {
+			console.log(this.responseText);
+			parseScenesFromFile(this.responseText);
+		};
+		oReq.open("get", URL, false);
+		oReq.send();
 	};
 
-	var loadFileAndParseScenes = function(URL) {
-		$.ajax({
-			url : URL,
-			success : function(result) {
-				parseScenesFromFile(result);
-			},
-			async : true
-		});
+	var loadFileAndParseScenesAsync = function(URL) {
+		var oReq = new XMLHttpRequest();
+		oReq.onload = function() {
+			console.log(this.responseText);
+			parseScenesFromFile(this.responseText);
+		};
+		oReq.open("get", URL, true);
+		oReq.send();
+	};
+
+	/*
+	 * Parser
+	 * 
+	 * purpose: Parse the macros out of a scene's text and display the resulting content
+	 * 
+	 * description: The Parser constructor takes in the scene rawtext, and then moves forward to each macro, outputting
+	 * the text in between as it goes. For each macro, it calls the appropriate macro's handler function. The handler
+	 * function is passed, in order, the macro object, and the parser object.
+	 */
+	var parseAndOutputSceneText = Parser.prototype.parseAndOutputSceneText = function(source) {
+
+		var parser = new Parser(source);
+
+		while (parser.current !== -1) {
+			var next = parser.source.indexOf("<<", parser.current);
+			if (next === -1) {
+				// TODO output parseText.substring(this.current)
+			} else {
+				parser.current = next;
+				var macro = parser.findNextMacro(parser.current);
+				var tempCurrent = parser.current;
+
+				macros[macro.command].handler(macro, parser);
+
+				// move parser.current ahead if macro parser didn't
+				if (tempCurrent === parser.current)
+					parser.current = macro.endIndex;
+			}
+		}
+	};
+
+	var parseAndOutputScene = HyperText.parseAndOutputScene = function(sceneId) {
+		parseAndOutputSceneText(scenes[sceneId]);
+		flushOutput(); // TODO write function to flush output
 	};
 
 	// Scene private class
@@ -312,7 +365,7 @@
 		return html;
 	};
 
-	var pushHistory = function(sceneId) {
+	var pushHistory = HyperText.pushHistory = function(sceneId) {
 		if (!hasScene(sceneId)) {
 			throw {
 				name : "illegal argument exception",
@@ -322,7 +375,7 @@
 		history.push(sceneId);
 	};
 
-	var popHistory = function() {
+	var popHistory = HyperText.popHistory = function() {
 		if (history.length === 0) {
 			throw {
 				name : "stack exception",
@@ -333,7 +386,7 @@
 			return null;
 		}
 		history.pop();
-		return (history[history.length - 1])
+		return (history[history.length - 1]);
 	};
 
 	// LinkSet private class
@@ -372,12 +425,10 @@
 			};
 		}
 
-		// I.c - get start scene
-		if (typeof config.start !== undefined && typeof config.start === "string") {
-			start = baseUrl + config.start + ".md";
-			fileList.push(start);
-		} else {
-			throw "config must have value 'start', which must be a string with the address of your starting scene.";
+		// I.c - get initial file
+		var initial = null;
+		if (typeof config.initial !== undefined && typeof config.initial === "string") {
+			initial = baseUrl + config.initial + ".md";
 		}
 
 		// I.d - get story files
@@ -393,43 +444,24 @@
 			throw "config must have a value 'files', which must be an array of strings with addresses to your story files.";
 		}
 
-		// I.e - get linkDisplay
-		if (typeof config.linkDisplay !== undefined) {
-			linkDisplay = config.linkDisplay;
-			if (linkDisplay !== "manual" && linkDisplay !== "automatic")
-				throw "if config has a value for 'linkDisplay', its value must be either 'manual' or 'automatic'.";
-		}
-
-		// I.f - get linkDisplayHandler
-		if (linkDisplay === "manual") {
-			if (typeof config.linkDisplayHandler !== undefined && isFunction(config.linkDisplayHandler)) {
-				linkDisplayHandler = config.linkDisplayHandler;
-			} else {
-				throw "if 'manual' is chosen for 'linkDisplay', a function must be provided for 'linkDisplayHandler'.";
-			}
-		}
-
 		// I.g - get display frame
 		if (typeof config.display !== undefined) {
-			display = $(config.display);
-		} else {
-			throw "a DOM object to be used for text output must be given.";
+			display = config.display;
 		}
 
 		// II - initialize variables
 		history = [];
-		converter = new Showdown.converter();
 
 		// III - perform final setup
-		// III.a - load start file
-		loadFileAndParseScenesSync(start);
-		if (!hasScene("start")) {
-			throw "starting file must contain a scene with id 'start'.";
+		// III.a - load initial file
+		if (initial !== null) {
+			loadFileAndParseScenesSync(initial);
 		}
 
 		// III.b - load remaining files
-		for ( var i = 0, len = fileList.length; i < len; i++)
-			loadFileAndParseScenes(fileList[i]);
+		for ( var i = 0, len = fileList.length; i < len; i++) {
+			loadFileAndParseScenesAsync(fileList[i]);
+		}
 
 		// III.c - display start screen
 		displayScene("start");
@@ -448,15 +480,11 @@
 		}
 	};
 
-	HyperText.getSceneParsedText = function(id) {
-		return getScene(id).getParsedText();
-	};
-
 	var getSceneHtml = HyperText.getSceneHtml = function(id) {
 		return getScene(id).getParsedTextAsHtml(variables);
 	};
 
-	var displayScene = HyperText.displayScene = function(sceneId) {
+	var displayScene = HyperText.displayScene = function(sceneId, outputLoc) {
 		console.debug("displaying: " + sceneId);
 
 		// I - display linked scene
@@ -472,34 +500,10 @@
 		// II.a - push new scene to history
 		pushHistory(sceneId);
 
-		// II.b - add link handler to new scene links
-		if (linkDisplay === "automatic") {
-			$("a").click(function(e) {
-				e.stopPropagation();
-				e.preventDefault();
-				HyperText.linkHandler(e);
-			});
-		} else {
-			linkDisplayHandler(linkSet);
-		}
-
 	};
 
-	HyperText.linkHandler = function(e) {
-		if (linkDisplay === "automatic") {
-			if ($(e.target).attr("id") === "back") {
-				displayScene(popHistory());
-			} else {
-				var targetScene = $(e.target).attr("href");
-				displayScene(targetScene);
-			}
-		} else {
-			if (e === HyperText.BACK) {
-				displayScene(popHistory());
-			} else {
-				displayScene(e);
-			}
-		}
+	HyperText.back = function() {
+		
 	};
 
 	// ///////////////////////////////////////////////
@@ -508,6 +512,7 @@
 	if (typeof module === "object" && typeof module.exports === "object") {
 		module.exports = HyperText;
 	}
+
 	if (typeof define === "function" && define.amd) {
 		define("hypertext", [], function() {
 			return HyperText;
