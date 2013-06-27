@@ -287,7 +287,6 @@
 	var loadFileAndParseScenesSync = function(URL) {
 		var oReq = new XMLHttpRequest();
 		oReq.onload = function() {
-			console.log(this.responseText);
 			parseScenesFromFile(this.responseText);
 		};
 		oReq.open("get", URL, false);
@@ -297,7 +296,6 @@
 	var loadFileAndParseScenesAsync = function(URL) {
 		var oReq = new XMLHttpRequest();
 		oReq.onload = function() {
-			console.log(this.responseText);
 			parseScenesFromFile(this.responseText);
 		};
 		oReq.open("get", URL, true);
@@ -423,6 +421,16 @@
 			variables = {
 				pvalues : config.variables
 			};
+		}
+		
+		// get macro extensions
+		if (config.macros) {
+			var key = null;
+			for (key in config.macros) {
+				if (config.macros.hasOwnProperty(key)) {
+					macros[key] = config.macros[key];
+				}
+			}
 		}
 
 		// I.c - get initial file
