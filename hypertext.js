@@ -21,7 +21,6 @@
 	var formatter = null;
 	var scenes = {};
 	var history = null;
-	var linkSet = null;
 
 	// DEFAULT MACROS
 	var macros = HyperText.macros = {};
@@ -338,31 +337,6 @@
 		flushOutput(); // TODO write function to flush output
 	};
 
-	// Scene private class
-	var Scene = function(id, raw) {
-		this.id = id;
-		this.rawText = raw;
-	};
-
-	Scene.prototype.getId = function() {
-		return this.id;
-	};
-
-	Scene.prototype.getRawText = function() {
-		return this.rawText;
-	};
-
-	Scene.prototype.getParsedText = function(vars) {
-		return parseText(this.getRawText(), vars);
-	};
-
-	Scene.prototype.getParsedTextAsHtml = function(vars) {
-		var parsedText = this.getParsedText(vars);
-		var html = converter.makeHtml(parsedText);
-
-		return html;
-	};
-
 	var pushHistory = HyperText.pushHistory = function(sceneId) {
 		if (!hasScene(sceneId)) {
 			throw {
@@ -385,23 +359,6 @@
 		}
 		history.pop();
 		return (history[history.length - 1]);
-	};
-
-	// LinkSet private class
-	var LinkSet = function() {
-		this.links = [];
-		this.back = false;
-	};
-
-	LinkSet.prototype.addLink = function(sceneId, linkText) {
-		this.links.push({
-			scene : sceneId,
-			text : linkText
-		});
-	};
-
-	LinkSet.prototype.numLinks = function() {
-		return this.links.length;
 	};
 
 	// HyperText main functions
@@ -499,10 +456,7 @@
 		// I.a - clear display frame
 		display.html("");
 
-		// I.b - display next scene
-		if (linkDisplay === "manual")
-			linkSet = new LinkSet();
-		display.html(getSceneHtml(sceneId));
+		// I.b - TODO display next scene
 
 		// II - background handling
 		// II.a - push new scene to history
