@@ -1,10 +1,6 @@
 (function(window, undefined) {
 
-	// Establish the root object, window in the browser, or global on the server.
-	var root = window;
-
-	// The top-level namespace. All public HyperText classes and modules will
-	// be attached to this.
+	// The top-level namespace. All public HyperText classes and modules will be attached to this.
 	var HyperText = (function() {
 		return {};
 	});
@@ -335,30 +331,6 @@
 	var parseAndOutputScene = HyperText.parseAndOutputScene = function(sceneId) {
 		parseAndOutputSceneText(scenes[sceneId]);
 		flushOutput(); // TODO write function to flush output
-	};
-
-	var pushHistory = HyperText.pushHistory = function(sceneId) {
-		if (!hasScene(sceneId)) {
-			throw {
-				name : "illegal argument exception",
-				message : "cannot push name of scene that doesn't exist"
-			};
-		}
-		history.push(sceneId);
-	};
-
-	var popHistory = HyperText.popHistory = function() {
-		if (history.length === 0) {
-			throw {
-				name : "stack exception",
-				message : "cannot pop from an empty history"
-			};
-		} else if (history.length === 1) {
-			history.pop();
-			return null;
-		}
-		history.pop();
-		return (history[history.length - 1]);
 	};
 
 	// HyperText main functions
