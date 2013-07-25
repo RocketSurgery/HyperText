@@ -16,13 +16,10 @@ When making a text-based game, the last thing you want to do is put the text in 
 
 The engine must be initialized with a configuration before it can be used. This must be done by calling `HyperText.init(configuration)`, with `configuration` being an object with the following properties:
 
-* `baseUrl` - the base url for your story files. This is an optional attribute.
-* `variables` - an object containing any additional variables you would like to reference in your macros.
-* `start` - the url for the file containing the 'Start' scene. This scene will be loaded synchronously and will be available for display while the other resources are loaded.
+* `baseUrl` - the base url in which the engine will look for your story files. This is an optional attribute.
+* `context` - the default context object.
 * `files` - an array containing the urls for your story files. The engine will load the files and parse the scenes.
-* `linkHandling` - either `"automatic"` or `"manual"`. Automatic handling requires that you provide a value for `display`, and the engine will automatically follow links and change what text is displayed, a la Twine. If no value is provided, the engine will default to manual handling, and will require a link handler.
-* `linkHandler` - if you are manually handling links, you must provide the function which will be called when a link is clicked.
-* `display` - the DOM object you want to use as the wrapper for you game's output. This is used primarily for allowing the engine to automatically display your scenes.
+* `macros` - a list of macros to be used in parsing text.
 
 All properties are required unless specified otherwise.
 
@@ -32,7 +29,7 @@ Your game text is put in story files, which are given the `.sty` file extension.
 
 ### Displaying Scenes
 
-To display a scene you call `HyperText.display(sceneId [, outputLoc])`. If you provided a default output location during initialization, that will be the location provided, otherwise you can provide and output location for the text.
+To display a scene you call `HyperText.display(sceneId [, outputLoc, context])`. If you provided a default output location during initialization, that will be the location provided, otherwise you can provide and output location for the text.
 
 
 ### Semantic Markup
@@ -44,6 +41,10 @@ The engine uses Markdown syntax for semantic markup, plus special macros to spec
 ### Macros
 
 Macros are used to add special functionality to your story files, such as conditional branching and variable printing. A few basic macros are built into the engine, but the real power is the ability to add your own macro syntax, allowing you to add functionality specific to your game or story.
+
+#### Extensions
+
+Adding macros to HyperText is as simple as passing in an object containing your new macros to `init()`.
 
 ## Credit Where Credit is Due
 

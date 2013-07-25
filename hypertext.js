@@ -8,21 +8,20 @@
 	// PRIVATE VARIABLES
 
 	// configuration variables
-	var baseUrl = "";
-	var variables = null;
-	var fileList = [];
-	var display = null;
+	var baseUrl = null;
+	var defaultContext = null;
+	var fileList = null;
 
 	// engine variables
 	var formatter = null;
-	var scenes = {};
+	var scenes = null;
 	var history = null;
 
 	// DEFAULT MACROS
 	var macros = HyperText.macros = {};
 
 	macros['print'] = {
-		handler : function(macro, parser) {
+		handler : function(macro, parser, context) {
 
 			// VALIDITY CHECKING
 			if (macro.params.length !== 1) {
@@ -279,16 +278,7 @@
 		}
 	};
 
-	var loadFileAndParseScenesSync = function(URL) {
-		var oReq = new XMLHttpRequest();
-		oReq.onload = function() {
-			parseScenesFromFile(this.responseText);
-		};
-		oReq.open("get", URL, false);
-		oReq.send();
-	};
-
-	var loadFileAndParseScenesAsync = function(URL) {
+	var loadFileAndParseScenes = function(URL) {
 		var oReq = new XMLHttpRequest();
 		oReq.onload = function() {
 			parseScenesFromFile(this.responseText);
@@ -333,11 +323,18 @@
 		flushOutput(); // TODO write function to flush output
 	};
 
-	// HyperText main functions
+	// HYPERTEXT MAIN FUNCTION
+
 	HyperText.init = function(config) {
 
-		// I - read values from config
-		// I.a - get baseUrl
+		// Initialize Variables
+		baseUrl = "";
+		history = [];
+		fileList = [];
+		scenes = {};
+		
+		// Read Values From Config and Perform Validity Checking
+		// get baseUrl
 		if (typeof config.baseUrl !== undefined && typeof config.baseUrl === "string") {
 			if (config.baseUrl.lastIndexOf("/") == config.baseUrl.length - 1)
 				baseUrl = config.baseUrl;
@@ -345,15 +342,13 @@
 				baseUrl = config.baseUrl + "/";
 		}
 
-		// I.b - get variables object
-		if (typeof config.variables !== undefined) {
-			variables = {
-				pvalues : config.variables
-			};
+		// get context object
+		if (typeof config.context !== undefined) {
+			defaultContext = config.context;
 		}
 		
-		// get macro extensions
-		if (config.macros) {
+		// get custom macros
+		if (typeof config.macros !== undefined) {
 			var key = null;
 			for (key in config.macros) {
 				if (config.macros.hasOwnProperty(key)) {
@@ -362,13 +357,7 @@
 			}
 		}
 
-		// I.c - get initial file
-		var initial = null;
-		if (typeof config.initial !== undefined && typeof config.initial === "string") {
-			initial = baseUrl + config.initial + ".md";
-		}
-
-		// I.d - get story files
+		// get files
 		if (typeof config.files !== undefined && Object.prototype.toString.call(config.files) === '[object Array]') {
 
 			// iterate over each string, append it to baseUrl, and add it to filesList
@@ -381,27 +370,11 @@
 			throw "config must have a value 'files', which must be an array of strings with addresses to your story files.";
 		}
 
-		// I.g - get display frame
-		if (typeof config.display !== undefined) {
-			display = config.display;
-		}
-
-		// II - initialize variables
-		history = [];
-
-		// III - perform final setup
-		// III.a - load initial file
-		if (initial !== null) {
-			loadFileAndParseScenesSync(initial);
-		}
-
-		// III.b - load remaining files
+		// Perform Final Setup
+		// load remaining files
 		for ( var i = 0, len = fileList.length; i < len; i++) {
-			loadFileAndParseScenesAsync(fileList[i]);
+			loadFileAndParseScenes(fileList[i]);
 		}
-
-		// III.c - display start screen
-		displayScene("start");
 
 	};
 
