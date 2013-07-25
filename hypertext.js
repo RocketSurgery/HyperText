@@ -251,42 +251,6 @@
 		return "";
 	};
 
-	var parseScenesFromFile = function(file) {
-
-		file = new String(file);
-
-		var index = file.indexOf("<<scene");
-		while (index != -1) {
-
-			// get indices
-			var properIndex = index + 8;
-			var closeIndex = file.indexOf(">>", properIndex);
-
-			// get id
-			var id = file.substring(properIndex, closeIndex);
-			index = file.indexOf("<<scene", properIndex);
-
-			// get scene text
-			var sceneText;
-			if (index == -1)
-				sceneText = file.substring(closeIndex + 2);
-			else
-				sceneText = file.substring(closeIndex + 2, index);
-
-			// add scene to scenes
-			scenes[id] = new Scene(id, sceneText);
-		}
-	};
-
-	var loadFileAndParseScenes = function(URL) {
-		var oReq = new XMLHttpRequest();
-		oReq.onload = function() {
-			parseScenesFromFile(this.responseText);
-		};
-		oReq.open("get", URL, true);
-		oReq.send();
-	};
-
 	/*
 	 * Parser
 	 * 
@@ -373,16 +337,16 @@
 		// Perform Final Setup
 		// load remaining files
 		for ( var i = 0, len = fileList.length; i < len; i++) {
-			loadFileAndParseScenes(fileList[i]);
+			HyperText.loadFileAndParseScenes(fileList[i]);
 		}
 
 	};
 
-	var hasScene = HyperText.hasScene = function(id) {
+	HyperText.hasScene = function(id) {
 		return (typeof scenes[id] !== undefined);
 	};
 
-	var getScene = HyperText.getScene = function(id) {
+	HyperText.getScene = function(id) {
 		if (hasScene(id)) {
 			return scenes[id];
 		} else {
@@ -390,11 +354,11 @@
 		}
 	};
 
-	var getSceneHtml = HyperText.getSceneHtml = function(id) {
+	HyperText.getSceneHtml = function(id) {
 		return getScene(id).getParsedTextAsHtml(variables);
 	};
 
-	var displayScene = HyperText.displayScene = function(sceneId, outputLoc) {
+	HyperText.displayScene = function(sceneId, outputLoc) {
 		console.debug("displaying: " + sceneId);
 
 		// I - display linked scene
@@ -413,6 +377,42 @@
 		
 	};
 
+	HyperText.parseScenesFromText = function(file) {
+
+		file = new String(file);
+
+		var index = file.indexOf("<<scene");
+		while (index != -1) {
+
+			// get indices
+			var properIndex = index + 8;
+			var closeIndex = file.indexOf(">>", properIndex);
+
+			// get id
+			var id = file.substring(properIndex, closeIndex);
+			index = file.indexOf("<<scene", properIndex);
+
+			// get scene text
+			var sceneText;
+			if (index == -1)
+				sceneText = file.substring(closeIndex + 2);
+			else
+				sceneText = file.substring(closeIndex + 2, index);
+
+			// add scene to scenes
+			scenes[id] = sceneText;
+		}
+	};
+
+	HyperText.loadFileAndParseScenes = function(URL) {
+		var oReq = new XMLHttpRequest();
+		oReq.onload = function() {
+			HyperText.parseScenesFromText(this.responseText);
+		};
+		oReq.open("get", URL, true);
+		oReq.send();
+	};
+	
 	// ///////////////////////////////////////////////
 	// copied from jQuery to be AMD compliant
 	// ///////////////////////////////////////////////
