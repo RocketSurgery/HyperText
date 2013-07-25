@@ -27,10 +27,9 @@ All properties are required unless specified otherwise.
 
 Your game text is put in story files, which are given the `.sty` file extension. Story files can contain plaintext, markdown formatting, and macros, and can be broken up into scenes. 
 
-### Displaying Scenes
+### Retrieving Scenes
 
-To display a scene you call `HyperText.display(sceneId [, outputLoc, context])`. If you provided a default output location during initialization, that will be the location provided, otherwise you can provide and output location for the text.
-
+The engine allows you to retrieve the parsed text of a scene with 
 
 ### Semantic Markup
 

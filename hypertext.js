@@ -6,8 +6,6 @@
 		return {};
 	});
 
-	// PRIVATE VARIABLES
-
 	// configuration variables
 	var baseUrl = null;
 	var defaultContext = null;
@@ -15,7 +13,6 @@
 
 	// engine variables
 	var passages = null;
-	var history = null;
 
 	// DEFAULT MACROS
 	var macros = HyperText.macros = {};
@@ -95,55 +92,23 @@
 		}
 	};
 
-	macros['link'] = {
-		handler : function(macro, parser) {
-
-			// VALIDITY CHECKING
-			if (macro.params.length < 1) {
-				throw new Error("link macro must have at least one argument");
-			}
-
-			var link = document.createElement("a");
-			link.href = "javascript:void(0)";
-			link.className = 'internalLink';
-
-			if (macro.params.length === 1) {
-				link.innerHTML = macro.params[0];
-			} else {
-				link.innerHTML = macro.params.slice(1, macro.params.length)
-						.splice(" ");
-			}
-
-			link.onclick = function() {
-				macros['link'].execute(link, macro.params[0]);
-			};
-
-			// TODO output link
-
-		},
-		execute : function(link, target) {
-			// TODO write link execute behavior
-			parseAndOutputPassage(target);
-		}
-	};
-
-	macros['back'] = {
-		handler : function(macro, parser) {
-			var link = document.createElement("a");
-			link.href = "javascript:void(0)";
-			link.onclick = function() {
-				macros['back'].execute();
-			};
-		},
-		execute : function() {
-			// TODO write back link execute behavior
-		}
-	};
-
 	// PUBLIC VARIABLES
 	HyperText.BACK = "com.github.rocketsurgery.hypertext.BACK";
 
 	// UTILITY PRIVATE METHODS
+
+	/*
+	 * Parser
+	 * 
+	 * purpose: Parse the macros out of a passage's text and display the
+	 * resulting content
+	 * 
+	 * description: The Parser constructor takes in the passage rawtext, and
+	 * then moves forward to each macro, outputting the text in between as it
+	 * goes. For each macro, it calls the appropriate macro's handler function.
+	 * The handler function is passed (in order) the macro object, the
+	 * parser object, and the context.
+	 */
 
 	var Parser = function(source) {
 		this.source = source;
@@ -258,20 +223,7 @@
 		return "";
 	};
 
-	/*
-	 * Parser
-	 * 
-	 * purpose: Parse the macros out of a passage's text and display the resulting
-	 * content
-	 * 
-	 * description: The Parser constructor takes in the passage rawtext, and then
-	 * moves forward to each macro, outputting the text in between as it goes.
-	 * For each macro, it calls the appropriate macro's handler function. The
-	 * handler function is passed, in order, the macro object, and the parser
-	 * object.
-	 */
-	var parseAndOutputPassageText = Parser.prototype.parseAndOutputPassageText = function(
-			source) {
+	Parser.prototype.parsePassageText = function(source) {
 
 		var parser = new Parser(source);
 
@@ -293,13 +245,30 @@
 		}
 	};
 
-	var parseAndOutputPassage = HyperText.parseAndOutputPassage = function(passageId) {
-		parseAndOutputPassageText(passages[passageId]);
-		flushOutput(); // TODO write function to flush output
+	/*
+	 * Passage
+	 * 
+	 * purpose: act as a wrapper class for passages of text, and provide utility
+	 * methods for accessing, parsing, and formatting the text.
+	 */
+	
+	var Passage = function(rawText) {
+		this.raw = rawText;
+	};
+	
+	Passage.prototype.getRawText = function() {
+		return this.raw;
+	};
+	
+	Passage.prototype.getParsedText = function() {
+		// TODO write Passage.prototype.getParsedText()
+	};
+	
+	Passage.prototype.getParsedHtml = function() {
+		// TODO write Passage.prototype.getParsedHtml()
 	};
 
 	// HYPERTEXT MAIN FUNCTION
-
 	HyperText.init = function(config) {
 
 		// Initialize Variables
@@ -370,21 +339,6 @@
 
 	HyperText.getPassageHtml = function(id) {
 		return getPassage(id).getParsedTextAsHtml(variables);
-	};
-
-	HyperText.displayPassage = function(passageId, outputLoc) {
-		console.debug("displaying: " + passageId);
-
-		// I - display linked passage
-		// I.a - clear display frame
-		display.html("");
-
-		// I.b - TODO display next passage
-
-		// II - background handling
-		// II.a - push new passage to history
-		pushHistory(passageId);
-
 	};
 
 	HyperText.back = function() {
