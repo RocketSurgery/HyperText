@@ -1,6 +1,7 @@
 (function(window, undefined) {
 
-	// The top-level namespace. All public HyperText classes and modules will be attached to this.
+	// The top-level namespace. All public HyperText classes and modules will be
+	// attached to this.
 	var HyperText = (function() {
 		return {};
 	});
@@ -13,8 +14,7 @@
 	var fileList = null;
 
 	// engine variables
-	var formatter = null;
-	var scenes = null;
+	var passages = null;
 	var history = null;
 
 	// DEFAULT MACROS
@@ -34,14 +34,14 @@
 				var value = variables.values[macro.params[0].substring(1)];
 				// TODO output inline value
 			} else {
-				// print scene
-				// TODO output scene content
+				// print passage
+				// TODO output passage content
 			}
 		}
 	};
 
 	macros['if'] = {
-		handler : function(macro, parser) {
+		handler : function(macro, parser, context) {
 
 			var current = macro;
 
@@ -51,12 +51,14 @@
 				// find closing macro
 				var end = parser.findNextMacro(current.endIndex);
 				while (true) {
-					if (end.command === "elseif" || end.command === "else" || end.command === "endif") {
+					if (end.command === "elseif" || end.command === "else"
+							|| end.command === "endif") {
 						break;
 					} else if (end.command === "if") {
 
 						// parse out of nested if blocks
-						// after loop, end will be set to the endif corresponding to the previous if macro
+						// after loop, end will be set to the endif
+						// corresponding to the previous if macro
 						var depth = 0;
 						end = parser.findNextMacro(end.endIndex);
 						while (true) {
@@ -80,7 +82,8 @@
 						.join(" "))
 						: true;
 				if (cond) {
-					parseAndOutputSceneText(condText.substring(current.endIndex, end.startIndex));
+					parseAndOutputPassageText(condText.substring(
+							current.endIndex, end.startIndex));
 					return;
 				}
 
@@ -107,7 +110,8 @@
 			if (macro.params.length === 1) {
 				link.innerHTML = macro.params[0];
 			} else {
-				link.innerHTML = macro.params.slice(1, macro.params.length).splice(" ");
+				link.innerHTML = macro.params.slice(1, macro.params.length)
+						.splice(" ");
 			}
 
 			link.onclick = function() {
@@ -119,7 +123,7 @@
 		},
 		execute : function(link, target) {
 			// TODO write link execute behavior
-			parseAndOutputScene(target);
+			parseAndOutputPassage(target);
 		}
 	};
 
@@ -145,7 +149,7 @@
 		this.source = source;
 		this.current = 0;
 	};
-	
+
 	Parser.prototype.findNextMacro = function(startIndex) {
 		var i = this.source.indexOf("<<", startIndex);
 
@@ -211,12 +215,14 @@
 			// find closing macro
 			var end = findNextMacro(condText, current.endIndex);
 			while (true) {
-				if (end.command === "elseif" || end.command === "else" || end.command === "endif") {
+				if (end.command === "elseif" || end.command === "else"
+						|| end.command === "endif") {
 					break;
 				} else if (end.command === "if") {
 
 					// parse out of nested if blocks
-					// after loop, end will be set to the endif corresponding to the previous if macro
+					// after loop, end will be set to the endif corresponding to
+					// the previous if macro
 					var ifDepth = 0;
 					end = findNextMacro(condText, end.endIndex);
 					while (true) {
@@ -239,7 +245,8 @@
 			var cond = (current.command === "if" || current.command === "elseif") ? evalConditionalString(current.content)
 					: true;
 			if (cond) {
-				return parseText(condText.substring(current.endIndex, end.startIndex));
+				return parseText(condText.substring(current.endIndex,
+						end.startIndex));
 			}
 
 			// else, move on to next conditional section
@@ -254,13 +261,17 @@
 	/*
 	 * Parser
 	 * 
-	 * purpose: Parse the macros out of a scene's text and display the resulting content
+	 * purpose: Parse the macros out of a passage's text and display the resulting
+	 * content
 	 * 
-	 * description: The Parser constructor takes in the scene rawtext, and then moves forward to each macro, outputting
-	 * the text in between as it goes. For each macro, it calls the appropriate macro's handler function. The handler
-	 * function is passed, in order, the macro object, and the parser object.
+	 * description: The Parser constructor takes in the passage rawtext, and then
+	 * moves forward to each macro, outputting the text in between as it goes.
+	 * For each macro, it calls the appropriate macro's handler function. The
+	 * handler function is passed, in order, the macro object, and the parser
+	 * object.
 	 */
-	var parseAndOutputSceneText = Parser.prototype.parseAndOutputSceneText = function(source) {
+	var parseAndOutputPassageText = Parser.prototype.parseAndOutputPassageText = function(
+			source) {
 
 		var parser = new Parser(source);
 
@@ -282,8 +293,8 @@
 		}
 	};
 
-	var parseAndOutputScene = HyperText.parseAndOutputScene = function(sceneId) {
-		parseAndOutputSceneText(scenes[sceneId]);
+	var parseAndOutputPassage = HyperText.parseAndOutputPassage = function(passageId) {
+		parseAndOutputPassageText(passages[passageId]);
 		flushOutput(); // TODO write function to flush output
 	};
 
@@ -295,11 +306,12 @@
 		baseUrl = "";
 		history = [];
 		fileList = [];
-		scenes = {};
-		
+		passages = {};
+
 		// Read Values From Config and Perform Validity Checking
 		// get baseUrl
-		if (typeof config.baseUrl !== undefined && typeof config.baseUrl === "string") {
+		if (typeof config.baseUrl !== undefined
+				&& typeof config.baseUrl === "string") {
 			if (config.baseUrl.lastIndexOf("/") == config.baseUrl.length - 1)
 				baseUrl = config.baseUrl;
 			else
@@ -310,7 +322,7 @@
 		if (typeof config.context !== undefined) {
 			defaultContext = config.context;
 		}
-		
+
 		// get custom macros
 		if (typeof config.macros !== undefined) {
 			var key = null;
@@ -322,9 +334,11 @@
 		}
 
 		// get files
-		if (typeof config.files !== undefined && Object.prototype.toString.call(config.files) === '[object Array]') {
+		if (typeof config.files !== undefined
+				&& Object.prototype.toString.call(config.files) === '[object Array]') {
 
-			// iterate over each string, append it to baseUrl, and add it to filesList
+			// iterate over each string, append it to baseUrl, and add it to
+			// filesList
 			for ( var i = 0, len = config.files.length; i < len; i++) {
 				var file = baseUrl + config.files[i] + ".md";
 				fileList.push(file);
@@ -337,51 +351,51 @@
 		// Perform Final Setup
 		// load remaining files
 		for ( var i = 0, len = fileList.length; i < len; i++) {
-			HyperText.loadFileAndParseScenes(fileList[i]);
+			HyperText.loadFileAndParsePassages(fileList[i]);
 		}
 
 	};
 
-	HyperText.hasScene = function(id) {
-		return (typeof scenes[id] !== undefined);
+	HyperText.hasPassage = function(id) {
+		return (typeof passages[id] !== undefined);
 	};
 
-	HyperText.getScene = function(id) {
-		if (hasScene(id)) {
-			return scenes[id];
+	HyperText.getPassage = function(id) {
+		if (hasPassage(id)) {
+			return passages[id];
 		} else {
-			throw "Scene " + id + " does not exist or has not been loaded";
+			throw "Passage " + id + " does not exist or has not been loaded";
 		}
 	};
 
-	HyperText.getSceneHtml = function(id) {
-		return getScene(id).getParsedTextAsHtml(variables);
+	HyperText.getPassageHtml = function(id) {
+		return getPassage(id).getParsedTextAsHtml(variables);
 	};
 
-	HyperText.displayScene = function(sceneId, outputLoc) {
-		console.debug("displaying: " + sceneId);
+	HyperText.displayPassage = function(passageId, outputLoc) {
+		console.debug("displaying: " + passageId);
 
-		// I - display linked scene
+		// I - display linked passage
 		// I.a - clear display frame
 		display.html("");
 
-		// I.b - TODO display next scene
+		// I.b - TODO display next passage
 
 		// II - background handling
-		// II.a - push new scene to history
-		pushHistory(sceneId);
+		// II.a - push new passage to history
+		pushHistory(passageId);
 
 	};
 
 	HyperText.back = function() {
-		
+
 	};
 
-	HyperText.parseScenesFromText = function(file) {
+	HyperText.parsePassagesFromText = function(file) {
 
 		file = new String(file);
 
-		var index = file.indexOf("<<scene");
+		var index = file.indexOf("<<passage");
 		while (index != -1) {
 
 			// get indices
@@ -390,32 +404,30 @@
 
 			// get id
 			var id = file.substring(properIndex, closeIndex);
-			index = file.indexOf("<<scene", properIndex);
+			index = file.indexOf("<<passage", properIndex);
 
-			// get scene text
-			var sceneText;
+			// get passage text
+			var passageText;
 			if (index == -1)
-				sceneText = file.substring(closeIndex + 2);
+				passageText = file.substring(closeIndex + 2);
 			else
-				sceneText = file.substring(closeIndex + 2, index);
+				passageText = file.substring(closeIndex + 2, index);
 
-			// add scene to scenes
-			scenes[id] = sceneText;
+			// add passage to passages
+			passages[id] = passageText;
 		}
 	};
 
-	HyperText.loadFileAndParseScenes = function(URL) {
+	HyperText.loadFileAndParsePassages = function(URL) {
 		var oReq = new XMLHttpRequest();
 		oReq.onload = function() {
-			HyperText.parseScenesFromText(this.responseText);
+			HyperText.parsePassagesFromText(this.responseText);
 		};
 		oReq.open("get", URL, true);
 		oReq.send();
 	};
-	
-	// ///////////////////////////////////////////////
-	// copied from jQuery to be AMD compliant
-	// ///////////////////////////////////////////////
+
+	// AMD COMPLIENCE
 	if (typeof module === "object" && typeof module.exports === "object") {
 		module.exports = HyperText;
 	}
@@ -427,7 +439,7 @@
 	}
 
 	// If there is a window object, that at least has a document property,
-	// define jQuery and $ identifiers
+	// define HyperText
 	if (typeof window === "object" && typeof window.document === "object") {
 		window.HyperText = HyperText;
 	}
