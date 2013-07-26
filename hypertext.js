@@ -9,10 +9,10 @@
 	// configuration variables
 	var baseUrl = null;
 	var defaultContext = null;
-	var fileList = null;
-
-	// engine variables
+	var files = null;
+	var filesLoaded = null;
 	var passages = null;
+	var onReady = null;
 
 	// DEFAULT MACROS
 	var macros = HyperText.macros = {};
@@ -100,14 +100,11 @@
 	/*
 	 * Parser
 	 * 
-	 * purpose: Parse the macros out of a passage's text and display the
-	 * resulting content
+	 * purpose: Parse the macros out of a passage's text and display the resulting content
 	 * 
-	 * description: The Parser constructor takes in the passage rawtext, and
-	 * then moves forward to each macro, outputting the text in between as it
-	 * goes. For each macro, it calls the appropriate macro's handler function.
-	 * The handler function is passed (in order) the macro object, the
-	 * parser object, and the context.
+	 * description: The Parser constructor takes in the passage rawtext, and then moves forward to each macro,
+	 * outputting the text in between as it goes. For each macro, it calls the appropriate macro's handler function. The
+	 * handler function is passed (in order) the macro object, the parser object, and the context.
 	 */
 
 	var Parser = function(source) {
@@ -248,22 +245,22 @@
 	/*
 	 * Passage
 	 * 
-	 * purpose: act as a wrapper class for passages of text, and provide utility
-	 * methods for accessing, parsing, and formatting the text.
+	 * purpose: act as a wrapper class for passages of text, and provide utility methods for accessing, parsing, and
+	 * formatting the text.
 	 */
-	
+
 	var Passage = function(rawText) {
 		this.raw = rawText;
 	};
-	
+
 	Passage.prototype.getRawText = function() {
 		return this.raw;
 	};
-	
+
 	Passage.prototype.getParsedText = function() {
 		// TODO write Passage.prototype.getParsedText()
 	};
-	
+
 	Passage.prototype.getParsedHtml = function() {
 		// TODO write Passage.prototype.getParsedHtml()
 	};
@@ -273,8 +270,9 @@
 
 		// Initialize Variables
 		baseUrl = "";
+		filesLoaded = 0;
 		history = [];
-		fileList = [];
+		files = [];
 		passages = {};
 
 		// Read Values From Config and Perform Validity Checking
@@ -306,23 +304,33 @@
 		if (typeof config.files !== undefined
 				&& Object.prototype.toString.call(config.files) === '[object Array]') {
 
-			// iterate over each string, append it to baseUrl, and add it to
-			// filesList
+			// iterate over each string, append it to baseUrl, and add it to files
 			for ( var i = 0, len = config.files.length; i < len; i++) {
 				var file = baseUrl + config.files[i] + ".md";
-				fileList.push(file);
+				files.push(file);
 			}
 
 		} else {
 			throw "config must have a value 'files', which must be an array of strings with addresses to your story files.";
 		}
 
-		// Perform Final Setup
-		// load remaining files
-		for ( var i = 0, len = fileList.length; i < len; i++) {
-			HyperText.loadFileAndParsePassages(fileList[i]);
+		// get onReady
+		if (typeof config.onReady === "function") {
+			onReady = config.onReady;
+		} else {
+			throw new Error("a function must be provided for config.onReady");
 		}
 
+		// Perform Final Setup
+		// load remaining files
+		for ( var i = 0, len = files.length; i < len; i++) {
+			HyperText.loadPassages(files[i]);
+		}
+
+	};
+
+	HyperText.isReady = function() {
+		return filesLoaded === files.length;
 	};
 
 	HyperText.hasPassage = function(id) {
@@ -330,7 +338,8 @@
 	};
 
 	HyperText.getPassage = function(id) {
-		if (hasPassage(id)) {
+		console.debug(passages);
+		if (this.hasPassage(id)) {
 			return passages[id];
 		} else {
 			throw "Passage " + id + " does not exist or has not been loaded";
@@ -349,16 +358,16 @@
 
 		file = new String(file);
 
-		var index = file.indexOf("<<passage");
+		var index = file.indexOf("<<passage ");
 		while (index != -1) {
 
 			// get indices
-			var properIndex = index + 8;
+			var properIndex = index + 10;
 			var closeIndex = file.indexOf(">>", properIndex);
 
 			// get id
 			var id = file.substring(properIndex, closeIndex);
-			index = file.indexOf("<<passage", properIndex);
+			index = file.indexOf("<<passage ", properIndex);
 
 			// get passage text
 			var passageText;
@@ -368,14 +377,23 @@
 				passageText = file.substring(closeIndex + 2, index);
 
 			// add passage to passages
-			passages[id] = passageText;
+			passages[id] = new Passage(passageText);
 		}
 	};
 
-	HyperText.loadFileAndParsePassages = function(URL) {
+	HyperText.loadPassages = function(URL) {
 		var oReq = new XMLHttpRequest();
 		oReq.onload = function() {
+			
+			// parse passages from file
 			HyperText.parsePassagesFromText(this.responseText);
+			
+			// if engine is ready, call onReady()
+			filesLoaded++;
+			if (HyperText.isReady()) {
+				onReady();
+			}
+			
 		};
 		oReq.open("get", URL, true);
 		oReq.send();

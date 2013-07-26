@@ -17,9 +17,10 @@ When making a text-based game, the last thing you want to do is put the text in 
 The engine must be initialized with a configuration before it can be used. This must be done by calling `HyperText.init(configuration)`, with `configuration` being an object with the following properties:
 
 * `baseUrl` - the base url in which the engine will look for your story files. This is an optional attribute.
-* `context` - the default context object.
+* `context` - the default context object. This is an optional attribute.
 * `files` - an array containing the urls for your story files. The engine will load the files and parse the scenes.
-* `macros` - a list of macros to be used in parsing text.
+* `macros` - a list of macros to be used in parsing text. This is an optional attribute.
+* `onReady` - a function to be called once HyperText has loaded all of its text dependencies.
 
 All properties are required unless specified otherwise.
 
@@ -29,7 +30,7 @@ Your game text is put in story files, which are given the `.sty` file extension.
 
 ### Retrieving Scenes
 
-The engine allows you to retrieve the parsed text of a scene with 
+The engine allows you to retrieve the parsed text of a scene either as text or as HTML.
 
 ### Semantic Markup
 
