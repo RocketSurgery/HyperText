@@ -89,6 +89,18 @@
 					break;
 				current = end;
 			}
+		},
+		evalConditionalString : function(condText) {
+			var condArray = condText.split(" ");
+			for ( var i = 0; i < condArray.length; i++) {
+				if (condArray[i].charAt(0) === "$") {
+					condArray[i] = "variables.pvalues."
+							+ condArray[i].substring(1);
+				}
+			}
+			condText = condArray.join(" ");
+			console.debug("condText: " + condText);
+			return eval(condText);
 		}
 	};
 
@@ -110,7 +122,13 @@
 	var Parser = function(source) {
 		this.source = source;
 		this.current = 0;
+		this.parsed = "";
+		this.html = null;
+		this.dom = null;
+		this.macros = [];
 	};
+
+	Parser.placeholder = "<span class=\"placeholder\"></span>";
 
 	Parser.prototype.findNextMacro = function(startIndex) {
 		var i = this.source.indexOf("<<", startIndex);
@@ -155,91 +173,70 @@
 		};
 	};
 
-	Parser.evalConditionalString = function(condText) {
-		var condArray = condText.split(" ");
-		for ( var i = 0; i < condArray.length; i++) {
-			if (condArray[i].charAt(0) === "$") {
-				condArray[i] = "variables.pvalues." + condArray[i].substring(1);
-			}
-		}
-		condText = condArray.join(" ");
-		console.debug("condText: " + condText);
-		return eval(condText);
-	};
-
-	Parser.parseConditional = function(condText) {
-
-		var current = findNextMacro(condText, 0);
-
-		// find appropriate for block
-		while (true) {
-
-			// find closing macro
-			var end = findNextMacro(condText, current.endIndex);
-			while (true) {
-				if (end.command === "elseif" || end.command === "else"
-						|| end.command === "endif") {
-					break;
-				} else if (end.command === "if") {
-
-					// parse out of nested if blocks
-					// after loop, end will be set to the endif corresponding to
-					// the previous if macro
-					var ifDepth = 0;
-					end = findNextMacro(condText, end.endIndex);
-					while (true) {
-						if (ifDepth === 0 && end.command === "endif") {
-							break;
-						} else if (end.command === "endif") {
-							ifDepth--;
-						} else if (end.command === "if") {
-							ifDepth++;
-						}
-
-						end = findNextMacro(condText, end.endIndex);
-					}
-				}
-
-				end = findNextMacro(condText, end.endIndex);
-			}
-
-			// evaluate current macro
-			var cond = (current.command === "if" || current.command === "elseif") ? evalConditionalString(current.content)
-					: true;
-			if (cond) {
-				return parseText(condText.substring(current.endIndex,
-						end.startIndex));
-			}
-
-			// else, move on to next conditional section
-			if (end.command === "endif")
-				break;
-			current = end;
-		}
-
-		return "";
-	};
-
-	Parser.prototype.parsePassageText = function(source) {
+	Parser.parsePassageText = function(source, context) {
 
 		var parser = new Parser(source);
 
-		while (parser.current !== -1) {
-			var next = parser.source.indexOf("<<", parser.current);
-			if (next === -1) {
-				// TODO output parseText.substring(this.current)
+		var macro = parser.findNextMacro(parser.current);
+		while (macro !== null) {
+
+			// append text between macros
+			parser.parsed += parser.source.substring(parser.current,
+					macro.startIndex);
+
+			// move parser.current forward
+			parser.current = macro.startIndex;
+
+			// call macro function
+			var macroValue = macros[macro.command].handler(macro, parser, context);
+
+			// add macroValue to parser
+			if (typeof macroValue === "string") {
+				// append macroValue
+				parser.parsed += macroValue;
+			} else if (macroValue instanceof Parser) {
+
+				// append parsed text for returned Parser
+				parser.parsed = macroValue.parsed;
+
+				// append macro values for returned Parser
+				parser.macros
+						.splice(parser.macros.length, 0, macroValue.macros);
 			} else {
-				parser.current = next;
-				var macro = parser.findNextMacro(parser.current);
-				var tempCurrent = parser.current;
 
-				macros[macro.command].handler(macro, parser);
-
-				// move parser.current ahead if macro parser didn't
-				if (tempCurrent === parser.current)
-					parser.current = macro.endIndex;
+				// append placeholder and store returned value
+				parser.parsed += Parser.placeholder;
+				parser.macros.push(macroValue);
 			}
+
+			// move parser.current ahead if macro function didn't
+			if (parser.current === macro.startIndex) {
+				parser.current = macro.endIndex;
+			}
+			
+			macro = parser.findNextMacro(parser.current);
+
 		}
+
+		// append final section of text
+		parser.parsed += parser.source.substring(parser.current);
+		parser.current = parser.source.length;
+
+		// return parser
+		return parser;
+	};
+
+	/**
+	 * Parser.format()
+	 * 
+	 * Converts parsed markdown (Parser.parsed) to an html string (Parser.html) and a DOM (Parser.dom).
+	 * 
+	 */
+
+	Parser.prototype.format = function() {
+		this.html = markdown.toHTML(this.parsed);
+		
+		// TODO parser.dom
 	};
 
 	/*
@@ -257,12 +254,14 @@
 		return this.raw;
 	};
 
-	Passage.prototype.getParsedText = function() {
+	Passage.prototype.getParsedText = function(context) {
 		// TODO write Passage.prototype.getParsedText()
 	};
 
-	Passage.prototype.getParsedHtml = function() {
-		// TODO write Passage.prototype.getParsedHtml()
+	Passage.prototype.getParsedHtml = function(context) {
+		var parser = Parser.parsePassageText(this.raw, context);
+		parser.format();
+		return parser.html;
 	};
 
 	// HYPERTEXT MAIN FUNCTION
@@ -275,7 +274,7 @@
 		files = [];
 		passages = {};
 
-		// Read Values From Config and Perform Validity Checking
+		// Read Values From config and Perform Validity Checking
 		// get baseUrl
 		if (typeof config.baseUrl !== undefined
 				&& typeof config.baseUrl === "string") {
@@ -338,7 +337,6 @@
 	};
 
 	HyperText.getPassage = function(id) {
-		console.debug(passages);
 		if (this.hasPassage(id)) {
 			return passages[id];
 		} else {
@@ -346,8 +344,18 @@
 		}
 	};
 
-	HyperText.getPassageHtml = function(id) {
-		return getPassage(id).getParsedTextAsHtml(variables);
+	HyperText.getPassageHtml = function(id, context) {
+
+		// Pass Correct Context and Validity Checking
+		if (typeof context === undefined) {
+			if (defaultContext === null) {
+				throw new Error(
+						"A default context must be provided during initialization, or one must be passed into getPassageHtml()");
+			}
+			context = defaultContext;
+		}
+
+		return this.getPassage(id).getParsedHtml(context);
 	};
 
 	HyperText.back = function() {
@@ -384,16 +392,16 @@
 	HyperText.loadPassages = function(URL) {
 		var oReq = new XMLHttpRequest();
 		oReq.onload = function() {
-			
+
 			// parse passages from file
 			HyperText.parsePassagesFromText(this.responseText);
-			
+
 			// if engine is ready, call onReady()
 			filesLoaded++;
 			if (HyperText.isReady()) {
 				onReady();
 			}
-			
+
 		};
 		oReq.open("get", URL, true);
 		oReq.send();
