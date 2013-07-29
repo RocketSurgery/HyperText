@@ -373,6 +373,10 @@
 		}
 	};
 
+	HyperText.getPassageRaw = function(id) {
+		return this.getPassage(id).raw;
+	};
+	
 	HyperText.getPassageHTML = function(id, context) {
 
 		// Pass Correct Context and Validity Checking
