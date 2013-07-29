@@ -13,6 +13,7 @@
 	var filesLoaded = null;
 	var passages = null;
 	var onReady = null;
+	var converter = null;
 
 	// DEFAULT MACROS
 	var macros = HyperText.macros = {};
@@ -48,8 +49,7 @@
 				// find closing macro
 				var end = parser.findNextMacro(current.endIndex);
 				while (true) {
-					if (end.command === "elseif" || end.command === "else"
-							|| end.command === "endif") {
+					if (end.command === "elseif" || end.command === "else" || end.command === "endif") {
 						break;
 					} else if (end.command === "if") {
 
@@ -79,8 +79,7 @@
 						.join(" "))
 						: true;
 				if (cond) {
-					parseAndOutputPassageText(condText.substring(
-							current.endIndex, end.startIndex));
+					parseAndOutputPassageText(condText.substring(current.endIndex, end.startIndex));
 					return;
 				}
 
@@ -94,8 +93,7 @@
 			var condArray = condText.split(" ");
 			for ( var i = 0; i < condArray.length; i++) {
 				if (condArray[i].charAt(0) === "$") {
-					condArray[i] = "variables.pvalues."
-							+ condArray[i].substring(1);
+					condArray[i] = "variables.pvalues." + condArray[i].substring(1);
 				}
 			}
 			condText = condArray.join(" ");
@@ -123,8 +121,8 @@
 		this.source = source;
 		this.current = 0;
 		this.parsed = "";
-		this.html = null;
-		this.dom = null;
+		this.HTML = null;
+		this.DOM = null;
 		this.macros = [];
 	};
 
@@ -181,8 +179,7 @@
 		while (macro !== null) {
 
 			// append text between macros
-			parser.parsed += parser.source.substring(parser.current,
-					macro.startIndex);
+			parser.parsed += parser.source.substring(parser.current, macro.startIndex);
 
 			// move parser.current forward
 			parser.current = macro.startIndex;
@@ -200,8 +197,7 @@
 				parser.parsed = macroValue.parsed;
 
 				// append macro values for returned Parser
-				parser.macros
-						.splice(parser.macros.length, 0, macroValue.macros);
+				parser.macros.splice(parser.macros.length, 0, macroValue.macros);
 			} else {
 
 				// append placeholder and store returned value
@@ -213,7 +209,7 @@
 			if (parser.current === macro.startIndex) {
 				parser.current = macro.endIndex;
 			}
-			
+
 			macro = parser.findNextMacro(parser.current);
 
 		}
@@ -234,9 +230,23 @@
 	 */
 
 	Parser.prototype.format = function() {
-		this.html = markdown.toHTML(this.parsed);
-		
-		// TODO parser.dom
+		// format markdown to html string
+		var html = converter.makeHtml(this.parsed);
+
+		// create wrapper element and add formatted html
+		this.DOM = document.createElement("div");
+		this.DOM.innerHTML = html;
+
+		// replace placeholders
+		var placeholders = this.DOM.getElementsByClassName("placeholder");
+		var len = placeholders.length;
+		for ( var i = 0; i < len; i++) {
+			placeholders[0].parentNode.replaceChild(this.macros[i], placeholders[0]);
+		}
+
+		// get parsed plaintext
+		this.HTML = this.DOM.innerHTML;
+
 	};
 
 	/*
@@ -255,13 +265,33 @@
 	};
 
 	Passage.prototype.getParsedText = function(context) {
-		// TODO write Passage.prototype.getParsedText()
-	};
-
-	Passage.prototype.getParsedHtml = function(context) {
+		
+		// parse and format passage
 		var parser = Parser.parsePassageText(this.raw, context);
 		parser.format();
-		return parser.html;
+		
+		// return parsed passage as text
+		return parser.DOM.textContent;
+	};
+
+	Passage.prototype.getParsedHTML = function(context) {
+		
+		// parse and format passage
+		var parser = Parser.parsePassageText(this.raw, context);
+		parser.format();
+		
+		// return parsed passage as HTML
+		return parser.HTML;
+	};
+	
+	Passage.prototype.getParsedDOM = function(context) {
+		
+		// parse and format passage
+		var parser = Parser.parsePassageText(this.raw, context);
+		parser.format();
+		
+		// return parsed passage as DOM
+		return parser.DOM;
 	};
 
 	// HYPERTEXT MAIN FUNCTION
@@ -273,11 +303,11 @@
 		history = [];
 		files = [];
 		passages = {};
+		converter = new Markdown.Converter();
 
 		// Read Values From config and Perform Validity Checking
 		// get baseUrl
-		if (typeof config.baseUrl !== undefined
-				&& typeof config.baseUrl === "string") {
+		if (typeof config.baseUrl !== undefined && typeof config.baseUrl === "string") {
 			if (config.baseUrl.lastIndexOf("/") == config.baseUrl.length - 1)
 				baseUrl = config.baseUrl;
 			else
@@ -300,8 +330,7 @@
 		}
 
 		// get files
-		if (typeof config.files !== undefined
-				&& Object.prototype.toString.call(config.files) === '[object Array]') {
+		if (typeof config.files !== undefined && Object.prototype.toString.call(config.files) === '[object Array]') {
 
 			// iterate over each string, append it to baseUrl, and add it to files
 			for ( var i = 0, len = config.files.length; i < len; i++) {
@@ -344,7 +373,7 @@
 		}
 	};
 
-	HyperText.getPassageHtml = function(id, context) {
+	HyperText.getPassageHTML = function(id, context) {
 
 		// Pass Correct Context and Validity Checking
 		if (typeof context === undefined) {
@@ -355,7 +384,27 @@
 			context = defaultContext;
 		}
 
-		return this.getPassage(id).getParsedHtml(context);
+		// return parsed HTML
+		return this.getPassage(id).getParsedHTML(context);
+	};
+
+	HyperText.getPassageText = function(id, context) {
+		
+		// Pass Correct Context and Validity Checking
+		if (typeof context === undefined) {
+			if (defaultContext === null) {
+				throw new Error(
+						"A default context must be provided during initialization, or one must be passed into getPassageHtml()");
+			}
+			context = defaultContext;
+		}
+
+		// return parsed text
+		return this.getPassage(id).getParsedText();
+	};
+
+	HyperText.getPassageDOM = function(id, context) {
+		return this.getPassage(id).getParsedDOM();
 	};
 
 	HyperText.back = function() {
