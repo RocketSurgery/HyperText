@@ -165,6 +165,7 @@
 
 		return {
 			command : command,
+			content : content,
 			params : params,
 			startIndex : startIndex,
 			endIndex : endIndex + 2
@@ -184,10 +185,15 @@
 			// move parser.current forward
 			parser.current = macro.startIndex;
 
-			// call macro function
-			var macroValue = macros[macro.command].handler(macro, parser, context);
+			// Call Macro Function
+			var macroValue = null;
+			if (typeof macros[macro.command] !== undefined && macros.hasOwnProperty(macro.command)) {
+				macroValue = macros[macro.command].handler(macro, parser, context);
+			} else {
+				macroValue = macros["default"].handler(macro, parser, context);
+			}
 
-			// add macroValue to parser
+			// Add Macro To Parsed
 			if (typeof macroValue === "string") {
 				// append macroValue
 				parser.parsed += macroValue;
@@ -198,7 +204,7 @@
 
 				// append macro values for returned Parser
 				parser.macros.splice(parser.macros.length, 0, macroValue.macros);
-			} else {
+			} else if (typeof macroValue !== undefined) {
 
 				// append placeholder and store returned value
 				parser.parsed += Parser.placeholder;
@@ -240,8 +246,13 @@
 		// replace placeholders
 		var placeholders = this.DOM.getElementsByClassName("placeholder");
 		var len = placeholders.length;
+
+		console.debug(placeholders);
+		console.debug(this.macros);
+
 		for ( var i = 0; i < len; i++) {
 			placeholders[0].parentNode.replaceChild(this.macros[i], placeholders[0]);
+			console.debug(placeholders);
 		}
 
 		// get parsed plaintext
@@ -265,31 +276,31 @@
 	};
 
 	Passage.prototype.getParsedText = function(context) {
-		
+
 		// parse and format passage
 		var parser = Parser.parsePassageText(this.raw, context);
 		parser.format();
-		
+
 		// return parsed passage as text
 		return parser.DOM.textContent;
 	};
 
 	Passage.prototype.getParsedHTML = function(context) {
-		
+
 		// parse and format passage
 		var parser = Parser.parsePassageText(this.raw, context);
 		parser.format();
-		
+
 		// return parsed passage as HTML
 		return parser.HTML;
 	};
-	
+
 	Passage.prototype.getParsedDOM = function(context) {
-		
+
 		// parse and format passage
 		var parser = Parser.parsePassageText(this.raw, context);
 		parser.format();
-		
+
 		// return parsed passage as DOM
 		return parser.DOM;
 	};
@@ -376,11 +387,11 @@
 	HyperText.getPassageRaw = function(id) {
 		return this.getPassage(id).raw;
 	};
-	
+
 	HyperText.getPassageHTML = function(id, context) {
 
 		// Pass Correct Context and Validity Checking
-		if (typeof context === undefined) {
+		if (!context) {
 			if (defaultContext === null) {
 				throw new Error(
 						"A default context must be provided during initialization, or one must be passed into getPassageHtml()");
@@ -393,9 +404,9 @@
 	};
 
 	HyperText.getPassageText = function(id, context) {
-		
+
 		// Pass Correct Context and Validity Checking
-		if (typeof context === undefined) {
+		if (!context) {
 			if (defaultContext === null) {
 				throw new Error(
 						"A default context must be provided during initialization, or one must be passed into getPassageHtml()");
@@ -403,16 +414,23 @@
 			context = defaultContext;
 		}
 
-		// return parsed text
-		return this.getPassage(id).getParsedText();
+		// Return Parsed Text
+		return this.getPassage(id).getParsedText(context);
 	};
 
 	HyperText.getPassageDOM = function(id, context) {
-		return this.getPassage(id).getParsedDOM();
-	};
 
-	HyperText.back = function() {
+		// Pass Correct Context and Validity Checking
+		if (!context) {
+			if (defaultContext === null) {
+				throw new Error(
+						"A default context must be provided during initialization, or one must be passed into getPassageHtml()");
+			}
+			context = defaultContext;
+		}
 
+		// Return Parsed DOM
+		return this.getPassage(id).getParsedDOM(context);
 	};
 
 	HyperText.parsePassagesFromText = function(file) {

@@ -18,19 +18,19 @@ The engine must be initialized with a configuration before it can be used. This 
 
 * `baseUrl` - the base url in which the engine will look for your story files. This is an optional attribute.
 * `context` - the default context object. This is an optional attribute.
-* `files` - an array containing the urls for your story files. The engine will load the files and parse the scenes.
+* `files` - an array containing the urls for your story files. The engine will load the files and parse the passages.
 * `macros` - a list of macros to be used in parsing text. This is an optional attribute.
-* `onReady` - a function to be called once HyperText has loaded all of its text dependencies.
+* `onReady` - a callback function, executed once HyperText has loaded all of its text dependencies.
 
 All properties are required unless specified otherwise.
 
-### Stories and Scenes
+### Stories and Passages
 
-Your game text is put in story files, which are given the `.sty` file extension. Story files can contain plaintext, markdown formatting, and macros, and can be broken up into scenes. 
+Your game text is put in story files, which are given the `.sty` file extension. Story files can contain plaintext, markdown formatting, and macros, and can be broken up into passages. 
 
-### Retrieving Scenes
+### Retrieving Passages
 
-The engine allows you to retrieve the parsed text of a scene either as text or as HTML.
+HyperText allows you to retrieve the parsed text of a passage as text, an HTML string, and as a DOM. You also have the option of retrieving the raw (unparsed) text of a passage, which is useful for storing text strings for menus and descriptions that don't require any macros or formatting.
 
 ### Semantic Markup
 
@@ -55,4 +55,4 @@ HyperText is heavily based off of Twine/Twee.
 ## Future Development
 
 * Define a way to differentiate between inline linking and standalone linking. This would allow for a mix of automatic and manual links, where only the standalone links would be displayed manually.
-* Allow for more than one `back` macro in a scene. This would include an optional flag which could be set to return to a single `back` macro per scene.
+* Allow for more than one `back` macro in a passage. This would include an optional flag which could be set to return to a single `back` macro per passage.
