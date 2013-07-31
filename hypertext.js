@@ -1,4 +1,4 @@
-(function(window, undefined) {
+(function(window) {
 
 	// The top-level namespace. All public HyperText classes and modules will be
 	// attached to this.
@@ -187,7 +187,7 @@
 
 			// Call Macro Function
 			var macroValue = null;
-			if (typeof macros[macro.command] !== undefined && macros.hasOwnProperty(macro.command)) {
+			if (typeof macros[macro.command] !== 'undefined' && macros.hasOwnProperty(macro.command)) {
 				macroValue = macros[macro.command].handler(macro, parser, context);
 			} else {
 				macroValue = macros["default"].handler(macro, parser, context);
@@ -204,8 +204,10 @@
 
 				// append macro values for returned Parser
 				parser.macros.splice(parser.macros.length, 0, macroValue.macros);
-			} else if (typeof macroValue !== undefined) {
+			} else if (typeof macroValue != 'undefined') {
 
+				console.debug(macroValue);
+				
 				// append placeholder and store returned value
 				parser.parsed += Parser.placeholder;
 				parser.macros.push(macroValue);
@@ -318,7 +320,7 @@
 
 		// Read Values From config and Perform Validity Checking
 		// get baseUrl
-		if (typeof config.baseUrl !== undefined && typeof config.baseUrl === "string") {
+		if (typeof config.baseUrl !== 'undefined' && typeof config.baseUrl === "string") {
 			if (config.baseUrl.lastIndexOf("/") == config.baseUrl.length - 1)
 				baseUrl = config.baseUrl;
 			else
@@ -326,12 +328,12 @@
 		}
 
 		// get context object
-		if (typeof config.context !== undefined) {
+		if (typeof config.context !== 'undefined') {
 			defaultContext = config.context;
 		}
 
 		// get custom macros
-		if (typeof config.macros !== undefined) {
+		if (typeof config.macros !== 'undefined') {
 			var key = null;
 			for (key in config.macros) {
 				if (config.macros.hasOwnProperty(key)) {
@@ -341,7 +343,7 @@
 		}
 
 		// get files
-		if (typeof config.files !== undefined && Object.prototype.toString.call(config.files) === '[object Array]') {
+		if (typeof config.files !== 'undefined' && Object.prototype.toString.call(config.files) === '[object Array]') {
 
 			// iterate over each string, append it to baseUrl, and add it to files
 			for ( var i = 0, len = config.files.length; i < len; i++) {
@@ -373,7 +375,7 @@
 	};
 
 	HyperText.hasPassage = function(id) {
-		return (typeof passages[id] !== undefined);
+		return (typeof passages[id] !== 'undefined');
 	};
 
 	HyperText.getPassage = function(id) {
