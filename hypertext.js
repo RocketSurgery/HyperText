@@ -1,4 +1,4 @@
-(function(window) {
+(function(window, undefined) {
 
 	// The top-level namespace. All public HyperText classes and modules will be
 	// attached to this.
@@ -204,9 +204,9 @@
 
 				// append macro values for returned Parser
 				parser.macros.splice(parser.macros.length, 0, macroValue.macros);
-			} else if (typeof macroValue != 'undefined') {
+			} else if (typeof macroValue !== 'undefined') {
 
-				console.debug(macroValue);
+//				console.debug(macroValue);
 				
 				// append placeholder and store returned value
 				parser.parsed += Parser.placeholder;
@@ -249,12 +249,12 @@
 		var placeholders = this.DOM.getElementsByClassName("placeholder");
 		var len = placeholders.length;
 
-		console.debug(placeholders);
-		console.debug(this.macros);
+//		console.debug(placeholders);
+//		console.debug(this.macros);
 
 		for ( var i = 0; i < len; i++) {
 			placeholders[0].parentNode.replaceChild(this.macros[i], placeholders[0]);
-			console.debug(placeholders);
+//			console.debug(placeholders);
 		}
 
 		// get parsed plaintext
