@@ -27,7 +27,7 @@ class EditorPane extends PolymerElement {
 
     void updatePassage(Event e)
     {
-        print("do something to update passage");
-
+        print("passage data changed");
+        passage = passage;
     }
 }

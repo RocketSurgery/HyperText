@@ -5,7 +5,7 @@ import 'ht_editorpane.dart';
 @CustomTag('ht-passagelist')
 class PassageList extends PolymerElement
 {
-    List<Passage> passages = toObservable([]);
+    @observable List<Passage> passages = toObservable([]);
     EditorPane editorPane;
 
     PassageList.created() : super.created();
@@ -20,11 +20,6 @@ class PassageList extends PolymerElement
     void detached()
     {
         super.detached();
-    }
-
-    void select(Event e)
-    {
-        print("selected");
     }
 
     void newPassage(Event e)
@@ -46,10 +41,10 @@ class PassageList extends PolymerElement
     }
 }
 
-class Passage
+class Passage extends Observable
 {
-    String title = '';
-    String content = '';
+    @observable String title = '';
+    @observable String content = '';
 }
 
 @CustomTag('ht-passagelistitem')
