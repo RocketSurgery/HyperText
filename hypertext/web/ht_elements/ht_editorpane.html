@@ -10,16 +10,23 @@
             border: solid 1px;
             padding: 10px 10px 10px 10px;
             }
+
+            #title_box {
+            display: block;
+            width: 100%
+            }
+
+            #content_box {
+            display: block;
+            width: 100%;
+            }
         </style>
-            <div>
-                <input id="title_box" type="text" value="{{passage.title}}" on-change="{{updatePassage}}">
-                <input id="content_box" type="text" value="{{passage.content}}" on-change="{{updatePassage}}">
-            </div>
+        <input id="title_box" type="text" value="{{passage.title}}">
+        <textarea id="content_box" on-input={{updatePassageContent}}></textarea>
         <hr>
         <h1>{{passage.title}}</h1>
         <div>{{passage.content}}</div>
     </template>
 
   <script type="application/dart" src="ht_editorpane.dart"></script>
-
 </polymer-element>

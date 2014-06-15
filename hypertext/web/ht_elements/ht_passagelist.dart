@@ -27,7 +27,7 @@ class PassageList extends PolymerElement
         passages.add(new Passage()
                         ..title = 'New Passage'
                         ..content = 'Start typing your passage here.');
-        editorPane.passage = passages.last;
+        editorPane.setPassage(passages.last);
     }
 
     void addPassage(Passage passage)
@@ -37,7 +37,7 @@ class PassageList extends PolymerElement
 
     void selectPassage(Event e)
     {
-        editorPane.passage = (e.target as PassageListItem).passage;
+        editorPane.setPassage((e.target as PassageListItem).passage);
     }
 }
 
