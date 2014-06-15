@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<polymer-element name="ht-passagelist">
+  <template>
+    <button id="new_passage_button" on-click="{{addPassage}}">New Passage</button>
+    <ul id="passage_list">
+      <template repeat="{{passage in passages}}">
+        <li is="ht-passagelistitem" passage="{{passage}}" on-click="{{selectPassage}}"></li>
+      </template>
+    </ul>
+  </template>
+
+  <script type="application/dart" src="ht_passagelist.dart"></script>
+</polymer-element>
+
+<polymer-element name="ht-passagelistitem" extends="li">
+    <template>
+        <p>
+            {{passage.title}}
+        </p>
+    </template>
+</polymer-element>

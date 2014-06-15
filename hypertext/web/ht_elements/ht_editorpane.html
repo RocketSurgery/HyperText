@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<polymer-element name="ht-editorpane">
+
+    <template>
+        <style>
+            :host {
+            background-color: LemonChiffon;
+            text-align: left;
+            display: inline-block;
+            border: solid 1px;
+            padding: 10px 10px 10px 10px;
+            }
+        </style>
+            <div>
+                <input id="title_box" type="text" value="{{passage.title}}" on-change="{{updatePassage}}">
+                <input id="content_box" type="text" value="{{passage.content}}" on-change="{{updatePassage}}">
+            </div>
+        <hr>
+        <h1>{{passage.title}}</h1>
+        <div>{{passage.content}}</div>
+    </template>
+
+  <script type="application/dart" src="ht_editorpane.dart"></script>
+
+</polymer-element>

@@ -9,6 +9,8 @@
     
     <!-- import custom elements -->
     <link rel="import" href="packages/polymer/polymer.html">
+    <link rel="import" href="ht_elements/ht_passagelist.html">
+    <link rel="import" href="ht_elements/ht_editorpane.html">
     <script type="application/dart">export 'package:polymer/init.dart';</script>
     <script src="packages/browser/dart.js"></script>
   </head>
@@ -17,13 +19,9 @@
     
     <p>The experimental HyperText editor</p>
     
-    <div id="outline_pane">
-      <ul id="passage_list">
-      </ul>
-    </div>
+    <ht-passagelist id="passage_list"></ht-passagelist>
     
-    <div id="editor_pane">
-    </div>
+    <ht-editorpane id="editor_pane"></ht-editorpane>
 
   </body>
 </html>
