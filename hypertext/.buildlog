@@ -1,0 +1,72 @@
+---
+build.dart --machine --full
+[{"method":"warning","params":{"file":"web/hypertext.html","message":"Besides the initPolymer invocation, to run a polymer application you need to include the following HTML import: <link rel=\"import\" href=\"packages/polymer/polymer.html\">. This will include the common polymer logic needed to boostrap your application.","line":15,"charStart":452,"charEnd":458}}]
+build.dart finished [1046 ms]
+
+---
+build.dart --machine --changed=web\hypertext.html
+
+build.dart finished [973 ms]
+
+---
+build.dart --machine --changed=web\hypertext.html
+
+build.dart finished [1117 ms]
+
+---
+build.dart --machine --removed=web\clickcounter.html
+[{"method":"error","params":{"file":"web/hypertext.html","message":"couldn't find imported asset \"web/clickcounter.html\" in package \"hypertext\".","line":11,"charStart":261,"charEnd":305}}]
+build failed with errors: {Transform polymer (Linter) on hypertext|web/hypertext.html threw error: couldn't find imported asset "web/clickcounter.html" in package "hypertext".}
+build.dart finished [1023 ms]
+
+---
+build.dart --machine --removed=web\clickcounter.dart
+[{"method":"error","params":{"file":"web/hypertext.html","message":"couldn't find imported asset \"web/clickcounter.html\" in package \"hypertext\".","line":11,"charStart":261,"charEnd":305}}]
+build failed with errors: {Transform polymer (Linter) on hypertext|web/hypertext.html threw error: couldn't find imported asset "web/clickcounter.html" in package "hypertext".}
+build.dart finished [1004 ms]
+
+---
+build.dart --machine --changed=web\hypertext.html
+
+build.dart finished [1047 ms]
+
+---
+build.dart --machine --changed=web\hypertext.html
+
+build.dart finished [1041 ms]
+
+---
+build.dart --machine --changed=web\hypertext.css
+
+build.dart finished [1025 ms]
+
+---
+build.dart --machine --changed=web\hypertext.css
+
+build.dart finished [1012 ms]
+
+---
+build.dart --machine --changed=web\hypertext.css
+
+build.dart finished [1040 ms]
+
+---
+build.dart --machine --changed=web\hypertext.css
+
+build.dart finished [1028 ms]
+
+---
+build.dart --machine --changed=web\hypertext.css
+
+build.dart finished [1068 ms]
+
+---
+build.dart --machine --changed=web\hypertext.css
+
+build.dart finished [1032 ms]
+
+---
+build.dart --machine --changed=web\hypertext.html
+
+build.dart finished [1052 ms]
+
