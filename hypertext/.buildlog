@@ -1161,3 +1161,63 @@ build.dart --machine --changed=web\ht_elements\ht_passagelist.dart
 
 build.dart finished [1051 ms]
 
+---
+build.dart --machine --changed=web\ht_elements\ht_passagelist.dart
+
+build.dart finished [1049 ms]
+
+---
+build.dart --machine --changed=web\ht_elements\ht_editorpane.dart
+
+build.dart finished [1046 ms]
+
+---
+build.dart --machine --changed=web\ht_elements\ht_editorpane.dart
+
+build.dart finished [1170 ms]
+
+---
+build.dart --machine --changed=web\ht_elements\ht_editorpane.html
+
+build.dart finished [1078 ms]
+
+---
+build.dart --machine --changed=web\ht_elements\ht_passagelist.dart
+
+build.dart finished [1143 ms]
+
+---
+build.dart --machine --changed=web\ht_elements\ht_editorpane.dart
+
+build.dart finished [1075 ms]
+
+---
+build.dart --machine --changed=web\ht_elements\ht_editorpane.dart
+
+build.dart finished [1039 ms]
+
+---
+build.dart --machine --changed=web\ht_elements\ht_editorpane.dart
+
+build.dart finished [1586 ms]
+
+---
+build.dart --machine --changed=web\ht_elements\ht_passagelist.dart
+
+build.dart finished [1115 ms]
+
+---
+build.dart --machine --changed=web\ht_elements\ht_passagelist.html
+
+build.dart finished [1007 ms]
+
+---
+build.dart --machine --changed=web\ht_elements\ht_editorpane.dart
+
+build.dart finished [1079 ms]
+
+---
+build.dart --machine --changed=web\ht_elements\ht_passagelist.dart
+
+build.dart finished [1020 ms]
+

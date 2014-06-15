@@ -27,12 +27,17 @@ class PassageList extends PolymerElement
         print("selected");
     }
 
-    void addPassage(Event e)
+    void newPassage(Event e)
     {
         passages.add(new Passage()
                         ..title = 'New Passage'
                         ..content = 'Start typing your passage here.');
         editorPane.passage = passages.last;
+    }
+
+    void addPassage(Passage passage)
+    {
+        passages.add(passage);
     }
 
     void selectPassage(Event e)
@@ -51,9 +56,9 @@ class Passage
 class PassageListItem extends LIElement with Polymer, Observable
 {
     @published Passage passage;
-    
+
     PassageListItem.created() : super.created();
-    
+
     @override
     void attached()
     {
