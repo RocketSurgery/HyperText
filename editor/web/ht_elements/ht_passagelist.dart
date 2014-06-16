@@ -1,5 +1,7 @@
 import 'dart:html';
 import 'package:polymer/polymer.dart';
+import 'package:hypertext/hypertext.dart';
+
 import 'ht_editorpane.dart';
 
 @CustomTag('ht-passagelist')
@@ -39,12 +41,6 @@ class PassageList extends PolymerElement
     {
         editorPane.setPassage((e.target as PassageListItem).passage);
     }
-}
-
-class Passage extends Observable
-{
-    @observable String title = '';
-    @observable String content = '';
 }
 
 @CustomTag('ht-passagelistitem')

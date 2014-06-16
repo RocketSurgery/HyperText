@@ -1,5 +1,7 @@
 import 'dart:html';
 import 'package:polymer/polymer.dart';
+import 'package:hypertext/hypertext.dart';
+
 import 'ht_passagelist.dart';
 
 @CustomTag('ht-editorpane')
