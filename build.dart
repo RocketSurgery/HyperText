@@ -1,6 +1,6 @@
 import 'package:polymer/builder.dart';
         
 main(args) {
-  build(entryPoints: ['web/hypertext.html'],
+  build(entryPoints: ['editor/web/hypertext.html'],
         options: parseOptions(args));
 }
