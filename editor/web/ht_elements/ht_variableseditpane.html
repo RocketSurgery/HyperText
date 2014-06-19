@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<polymer-element name="ht-variableseditpane">
+
+    <template>
+        <style>
+            :host {
+            background-color: LemonChiffon;
+            text-align: left;
+            display: inline-block;
+            border: solid 1px;
+            padding: 10px 10px 10px 10px;
+            }
+        </style>
+        <h1>Edit Your Variables</h1>
+        <p id="message_area"></p>
+        <textarea id="edit_box" on-input={{updateVariables}}></textarea>
+    </template>
+
+  <script type="application/dart" src="ht_variableseditpane.dart"></script>
+</polymer-element>
