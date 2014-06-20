@@ -1,7 +1,7 @@
 <html>
   <head>
-    <script src="https://rawgit.com/Polymer/platform/0.3.2/platform.js"></script>
-    <script src="https://rawgit.com/Polymer/polymer/0.3.2/polymer.js"></script>
+    <script src="platform.js"></script>
+    <script src="polymer.js"></script>
   </head>
   <body>
     <template id="wrapper" is="auto-binding">
@@ -14,7 +14,14 @@
       </template>
     </template>
     <script>
-      document.getElementById('wrapper').random = Math.random();
+        document.getElementById('wrapper').random = Math.random();
+
+        var template = new document.createElement('template');
+        template.setAttribute('is', 'auto-binding');
+        template.innerHTML = "{{stuff}}";
+        template.stuff = "Making stuff happen yo.";
+
+        document.body.appendChild(template);
     </script>
   </body>
 </html>
