@@ -1,12 +1,13 @@
-specialText = 'special text for stuff';
+var specialText = 'special text for stuff';
 
-function addTemplate()
-{
-        var template = new document.createElement('template');
-        template.setAttribute('is', 'auto-binding');
+function addTemplate() {
+    'use strict';
 
-        template.innerHTML = "The special text is: '{{stuff}}'";
-        template.stuff = specialText;
+    var template = new document.createElement('template');
+    template.setAttribute('is', 'auto-binding');
 
-        document.body.appendChild(template);
+    template.innerHTML = "<p>The special text is: '{{stuff}}'<p>";
+    template.stuff = specialText;
+
+    document.body.appendChild(template);
 }
