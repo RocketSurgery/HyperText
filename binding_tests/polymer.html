@@ -1,27 +1,24 @@
 <html>
-  <head>
-    <script src="platform.js"></script>
-    <script src="polymer.js"></script>
-  </head>
-  <body>
-    <template id="wrapper" is="auto-binding">
-      <p>The random number is {{random}}</p>
-      <template if="{{ random < 0.5 }}">
-        <p>It's less than 0.5.</p>
-      </template>
-      <template if="{{ random >= 0.5 }}">
-        <p>It's greater than or equal to 0.5.</p>
-      </template>
-    </template>
+    <head>
+        <script src="platform.js"></script>
+        <script src="polymer.js"></script>
+        <script src="dynamic_binding.js"></script>
+    </head>
+    <body>
+        <template id="wrapper" is="auto-binding">
+            <p>The random number is {{random}}</p>
+            <template if="{{ random < 0.5 }}">
+                <p>It's less than 0.5.</p>
+            </template>
+            <template if="{{ random >= 0.5 }}">
+                <p>It's greater than or equal to 0.5.</p>
+            </template>
+            <button on-click="{{addTemplate}}">Add Template?</button>
+        </template>
+
     <script>
         document.getElementById('wrapper').random = Math.random();
-
-        var template = new document.createElement('template');
-        template.setAttribute('is', 'auto-binding');
-        template.innerHTML = "{{stuff}}";
-        template.stuff = "Making stuff happen yo.";
-
-        document.body.appendChild(template);
+        document.getElementById('wrapper').addTemplate = addTemplate;
     </script>
   </body>
 </html>
