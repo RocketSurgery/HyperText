@@ -10,6 +10,7 @@
         <!-- import scripts -->
         <script src="../bower_components/platform/platform.js"></script>
         <script src="../bower_components/polymer/polymer.js"></script>
+        <script src="../hypertext.js"></script>
     </head>
     <body>
         <template id="editor" is="auto-binding">
@@ -18,7 +19,13 @@
 
         <p>The experimental HyperText editor</p>
 
-        <h1>{{testValue}}</h1>
+        <div id="selector_panel">
+            <ul div="passage_list">
+                <template repeat="{{passage in passages}}">
+                    <li>{{passage.title}}</li>
+                </template>
+            </ul>
+        </div>
 
         </template>
         <script src="ht_editor.js"></script>
