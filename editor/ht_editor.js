@@ -1,8 +1,5 @@
-var ht_editor = (function (context) {
+(function (editor) {
     'use strict';
 
-    var editor = {};
-    editor.someValue = 5;
-
-    return editor;
-}());
+    editor.testValue = 'much testing, such wow';
+}(document.querySelector('#editor')));

@@ -9,21 +9,18 @@
 
         <!-- import scripts -->
         <script src="../bower_components/platform/platform.js"></script>
-        <script src="ht_editor.js"></script>
-
-        <!-- import custom elements -->
-        <link rel="import" href="../bower_components/polymer/polymer.html">
-        <link rel="import" href="ht_editorelements.html">
+        <script src="../bower_components/polymer/polymer.js"></script>
     </head>
     <body>
+        <template id="editor" is="auto-binding">
+
         <h1>HyperText</h1>
 
         <p>The experimental HyperText editor</p>
 
-        <ht-passagelist id="passage_list"></ht-passagelist>
+        <h1>{{testValue}}</h1>
 
-        <ht-editorpane id="editor_pane"></ht-editorpane>
-
-        <ht-variableseditpane></ht-variableseditpane>
+        </template>
+        <script src="ht_editor.js"></script>
     </body>
 </html>
