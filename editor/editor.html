@@ -19,12 +19,20 @@
 
         <p>The experimental HyperText editor</p>
 
-        <div id="selector_panel">
+        <div id="navigation_panel">
             <ul div="passage_list">
                 <template repeat="{{passage in passages}}">
                     <li>{{passage.title}}</li>
                 </template>
             </ul>
+        </div>
+
+        <div id="editor_panel">
+            <input id="title_box" type="text" value="{{selectedPassage.title}}">
+            <textarea id="content_box" value="{{selectedPassage.raw}}"></textarea>
+            <hr>
+            <h1>{{selectedPassage.title}}</h1>
+            <div>{{selectedPassage.raw}}</div>
         </div>
 
         </template>
