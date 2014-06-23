@@ -1,9 +1,29 @@
+<!DOCTYPE html>
+
 <html>
     <head>
-        <link rel="stylesheet" type="text/css" href="editor.css">
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>HyperText Editor</title>
+        <link rel="stylesheet" href="editor.css">
 
+        <!-- import scripts -->
+        <script src="../bower_components/platform/platform.js"></script>
         <script src="ht_editor.js"></script>
+
+        <!-- import custom elements -->
+        <link rel="import" href="../bower_components/polymer/polymer.html">
+        <link rel="import" href="ht_editorelements.html">
     </head>
     <body>
+        <h1>HyperText</h1>
+
+        <p>The experimental HyperText editor</p>
+
+        <ht-passagelist id="passage_list"></ht-passagelist>
+
+        <ht-editorpane id="editor_pane"></ht-editorpane>
+
+        <ht-variableseditpane></ht-variableseditpane>
     </body>
 </html>
