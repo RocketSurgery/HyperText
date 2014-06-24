@@ -31,10 +31,10 @@
 
             <div id="editor_panel">
                 <input id="title_box" type="text" value="{{selectedPassage.title}}">
-                <textarea id="raw_box" value="{{selectedPassage.raw}}"></textarea>
-                <hr>
+                <textarea id="raw_box" value="{{selectedPassage.raw}}" on-input="{{updatePreview}}"></textarea>
+
                 <h1>{{selectedPassage.title}}</h1>
-                <div>{{selectedPassage.raw}}</div>
+                <div id="preview_area"></div>
             </div>
 
             <div id="variable_panel">

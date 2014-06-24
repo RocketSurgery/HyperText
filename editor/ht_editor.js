@@ -8,6 +8,8 @@ var ht_editor = document.querySelector('#editor');
     editor.selectedPassage = editor.passages[0];
     editor.rawVariables = '{\n    "player" : "bob"\n}';
 
+    //var previewArea = editor.$.preview_area;
+
     editor.newPassage = function (e, detail, sender) {
         editor.passages.push(new hypertext.Passage());
     };
@@ -21,6 +23,22 @@ var ht_editor = document.querySelector('#editor');
         try {
             hypertext.context = JSON.parse(editor.rawVariables);
         } catch (exception) {
+            // TODO display some message letting the user know
         }
+    };
+
+    editor.updatePreview = function () {
+        var previewArea = editor.$.preview_area,
+            template = new document.createElement('template');
+
+        // remove existing children
+        while (previewArea.firstChild) {
+            previewArea.removeChild(previewArea.firstChild);
+        }
+
+        // insert new preview
+        template.setAttribute('is', 'auto-binding');
+        template.innerHTML = editor.selectedPassage.raw;
+        previewArea.appendChild(template);
     };
 }(hypertext, ht_editor));
