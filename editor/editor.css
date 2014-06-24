@@ -19,6 +19,18 @@ h1, p {
     background-color: #eee;
 }
 
+#variables_panel {
+    width: 49%;
+    height: 400px;
+    float: left;
+    border: 1px solid #ccc;
+    background-color: #eee;
+}
+
+#variables_box {
+    width: 100%;
+}
+
 #editor_panel {
     width: 49%;
     height: 400px;

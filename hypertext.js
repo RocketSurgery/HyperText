@@ -9,5 +9,7 @@ var hypertext = (function () {
         this.raw = 'This passage needs content.';
     };
 
+    hypertext.context = {};
+
     return hypertext;
 }());

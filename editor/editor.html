@@ -37,6 +37,10 @@
                 <div>{{selectedPassage.raw}}</div>
             </div>
 
+            <div id="variable_panel">
+                <textarea id="variables_box" value="{{rawVariables}}" on-input="{{parseVariables}}"></textarea>
+            </div>
+
         </template>
         <script src="ht_editor.js"></script>
     </body>
