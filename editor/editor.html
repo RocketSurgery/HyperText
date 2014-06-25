@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>HyperText Editor</title>
+        <link rel="stylesheet" href="editor.css">
+
+        <!-- import scripts -->
+        <script src="../bower_components/platform/platform.js"></script>
+        <script src="../bower_components/polymer/polymer.js"></script>
+        <script src="../hypertext.js"></script>
+    </head>
+    <body>
+        <template id="editor" is="auto-binding">
+
+            <h1>HyperText</h1>
+
+            <p>The experimental HyperText editor</p>
+
+            <div id="navigation_panel">
+                <ul id="passage_list">
+                    <template repeat="{{passage, index in passages}}">
+                        <li on-tap="{{selectPassage}}" index="{{index}}">{{passage.title}}</li>
+                    </template>
+                </ul>
+
+                <button id="new_passage_button" on-tap="{{newPassage}}">New Passage</button>
+            </div>
+
+            <div id="editor_panel">
+                <input id="title_box" type="text" value="{{selectedPassage.title}}">
+                <textarea id="raw_box" value="{{selectedPassage.raw}}" on-input="{{updatePreview}}"></textarea>
+
+                <h1>{{selectedPassage.title}}</h1>
+                <div id="preview_area"></div>
+            </div>
+
+            <div id="variable_panel">
+                <textarea id="variables_box" value="{{rawVariables}}" on-input="{{parseVariables}}"></textarea>
+            </div>
+
+        </template>
+        <script src="ht_editor.js"></script>
+    </body>
+</html>

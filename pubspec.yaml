@@ -1,9 +1,0 @@
-name: hypertext
-version: 0.0.1
-author: David LeGare
-description: The HyperText passage web editor, used for authoring HyperText stories.
-dependencies:
-  polymer: any
-transformers:
-- polymer:
-    entry_points: editor/web/hypertext.html

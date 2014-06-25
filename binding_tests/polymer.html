@@ -1,0 +1,24 @@
+<html>
+    <head>
+        <script src="../bower_components/platform/platform.js"></script>
+        <script src="../bower_components/polymer/polymer.js"></script>
+        <script src="dynamic_binding.js"></script>
+    </head>
+    <body>
+        <template id="wrapper" is="auto-binding">
+            <p>The random number is {{random}}</p>
+            <template if="{{ random < 0.5 }}">
+                <p>It's less than 0.5.</p>
+            </template>
+            <template if="{{ random >= 0.5 }}">
+                <p>It's greater than or equal to 0.5.</p>
+            </template>
+            <button on-click="{{addTemplate}}">Add Template?</button>
+        </template>
+
+    <script>
+        document.getElementById('wrapper').random = Math.random();
+        document.getElementById('wrapper').addTemplate = addTemplate;
+    </script>
+  </body>
+</html>
