@@ -7,8 +7,7 @@ var ht_editor = document.querySelector('#editor');
     editor.passages = [ new hypertext.Passage() ];
     editor.selectedPassage = editor.passages[0];
     editor.rawVariables = '{\n    "player" : "bob"\n}';
-
-    //var previewArea = editor.$.preview_area;
+    editor.context = { test : 'this is a test' };
 
     editor.newPassage = function (e, detail, sender) {
         editor.passages.push(new hypertext.Passage());
@@ -21,7 +20,7 @@ var ht_editor = document.querySelector('#editor');
 
     editor.parseVariables = function (e, detail, sender) {
         try {
-            hypertext.context = JSON.parse(editor.rawVariables);
+            editor.context = JSON.parse(editor.rawVariables);
         } catch (exception) {
             // TODO display some message letting the user know
         }
