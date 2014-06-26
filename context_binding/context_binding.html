@@ -5,13 +5,15 @@
     </head>
     <body>
         <template id="wrapper" is="auto-binding">
+            <!-- This shows that single instance binding can be done within
+                an auto-binding template -->
             <template bind="{{stuff}}">
-                <p>test value is: {{test}}</p>
+                <p>test value is: {{test}}</p> <!-- notice how {{stuff.test}} is accessed as {{test}} this means that the context is correctly bound-->
             </template>
 
             <button on-click="{{addTemplate}}">Add Template</button>
         </template>
 
-        <script src="binding_test.js"></script>
+        <script src="context_binding.js"></script>
     </body>
 </html>
