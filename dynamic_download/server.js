@@ -4,6 +4,7 @@ var http = require("http"),
     url = require("url"),
     path = require("path"),
     fs = require("fs"),
+    qs = require("querystring"),
     port = 8080,
     webroot = '../';
 
@@ -47,12 +48,22 @@ http.createServer(function (request, response) {
         });
     } else if (request.method === "POST") {
         console.log("request to POST made:");
+
+        var body = '';
+
         request.on('data', function (data) {
+            body += data;
+        });
+
+        request.on('end', function (data) {
+            var post = qs.parse(body);
+
             response.writeHead(200, {
                 'Content-Type': 'text/plain',
-                'Content-Disposition': 'attachment; filename="balls.txt"'
+                'Content-Disposition': 'attachment; filename="' + post.filename + '"'
             });
-            response.write(data);
+            response.write(post.content);
+
             response.end();
         });
     }
