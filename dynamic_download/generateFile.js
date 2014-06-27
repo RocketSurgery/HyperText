@@ -22,7 +22,7 @@ var generateFile = (function () {
     // setup on click response for link
     document.getElementById('download').onclick = function (e) {
         generateFile({
-            filename: 'export.txt',
+            filename: document.getElementById('file_name').value,
             content: document.getElementById('user_input').value
         });
 
