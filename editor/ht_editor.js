@@ -51,7 +51,7 @@ var ht_editor = document.querySelector('#editor');
     editor.generateFile = function (e, detail, sender) {
         var content = JSON.stringify(editor.passages);
         editor.$.submit_content.value = content;
-        editor.$.form.submit();
+        editor.$.submit.submit();
     };
 
     editor.addEventListener('template-bound', function () {
