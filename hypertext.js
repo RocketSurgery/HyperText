@@ -1,8 +1,10 @@
 var hypertext = (function () {
     'use strict';
 
-    var hypertext = {};
-    hypertext.context = {};
+    var hypertext = function (passages, context) {
+        this.passages = passages || [];
+        this.context = context || {};
+    };
 
     // define Passage
     hypertext.Passage = function () {

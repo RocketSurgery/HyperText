@@ -1,7 +1,7 @@
 /*global hypertext, console, FileReader*/
 var ht_editor = document.querySelector('#editor');
 
-(function (hypertext, editor) {
+(function (HyperText, editor) {
     'use strict';
 
     editor.passages = [];
@@ -11,12 +11,14 @@ var ht_editor = document.querySelector('#editor');
 
     var reader = new FileReader();
     reader.onloadend = function () {
-        editor.passages = JSON.parse(reader.result);
+        var ht = JSON.parse(reader.result);
+        editor.passages = ht.passages;
+        editor.context = ht.context;
         editor.updatePreview();
     };
 
     editor.newPassage = function (e, detail, sender) {
-        editor.passages.push(new hypertext.Passage());
+        editor.passages.push(new HyperText.Passage());
         editor.selectedPassage = editor.passages[editor.passages.length - 1];
         editor.updatePreview();
     };
@@ -55,7 +57,8 @@ var ht_editor = document.querySelector('#editor');
     };
 
     editor.generateFile = function (e, detail, sender) {
-        var content = JSON.stringify(editor.passages);
+        var ht = new HyperText(editor.passages, editor.context),
+            content = JSON.stringify(ht);
         editor.$.submit_content.value = content;
         editor.$.submit.submit();
     };
