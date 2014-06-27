@@ -1,47 +1,59 @@
 <!DOCTYPE html>
 
 <html>
-    <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>HyperText Editor</title>
-        <link rel="stylesheet" href="editor.css">
 
-        <!-- import scripts -->
-        <script src="../bower_components/platform/platform.js"></script>
-        <script src="../bower_components/polymer/polymer.js"></script>
-        <script src="../hypertext.js"></script>
-    </head>
-    <body>
-        <template id="editor" is="auto-binding">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>HyperText Editor</title>
+    <link rel="stylesheet" href="editor.css">
 
-            <h1>HyperText</h1>
+    <!-- import scripts -->
+    <script src="../bower_components/platform/platform.js"></script>
+    <script src="../bower_components/polymer/polymer.js"></script>
+    <script src="../hypertext.js"></script>
+</head>
 
-            <p>The experimental HyperText editor</p>
+<body>
+    <template id="editor" is="auto-binding">
 
-            <div id="navigation_panel">
-                <ul id="passage_list">
-                    <template repeat="{{passage, index in passages}}">
-                        <li on-tap="{{selectPassage}}" index="{{index}}">{{passage.title}}</li>
-                    </template>
-                </ul>
+        <h1>HyperText</h1>
 
-                <button id="new_passage_button" on-tap="{{newPassage}}">New Passage</button>
-            </div>
+        <p>The experimental HyperText editor</p>
 
-            <div id="editor_panel">
-                <input id="title_box" type="text" value="{{selectedPassage.title}}">
-                <textarea id="raw_box" value="{{selectedPassage.raw}}" on-input="{{updatePreview}}"></textarea>
+        <div id="navigation_panel">
+            <ul id="passage_list">
+                <template repeat="{{passage, index in passages}}">
+                    <li on-tap="{{selectPassage}}" index="{{index}}">{{passage.title}}</li>
+                </template>
+            </ul>
 
-                <h1>{{selectedPassage.title}}</h1>
-                <div id="preview_area"></div>
-            </div>
+            <button id="new_passage_button" on-tap="{{newPassage}}">New Passage</button>
+        </div>
 
-            <div id="variable_panel">
-                <textarea id="variables_box" value="{{rawVariables}}" on-input="{{parseVariables}}"></textarea>
-            </div>
+        <div id="editor_panel">
+            <input id="title_box" type="text" value="{{selectedPassage.title}}">
+            <textarea id="raw_box" value="{{selectedPassage.raw}}" on-input="{{updatePreview}}"></textarea>
 
-        </template>
-        <script src="ht_editor.js"></script>
-    </body>
+            <h1>{{selectedPassage.title}}</h1>
+            <div id="preview_area"></div>
+        </div>
+
+        <div id="variable_panel">
+            <textarea id="variables_box" value="{{rawVariables}}" on-input="{{parseVariables}}"></textarea>
+        </div>
+
+    </template>
+
+    <form id="submit" action="/" method="post">
+        <label for="submit_filename">Export As:</label>
+        <input id="submit_filename" type="text" name="filename" value="passages.ht.json">
+        <input id="submit_content" type="hidden" name="content">
+        <button id="export">Export</button>
+    </form>
+
+    <script src="ht_editor.js"></script>
+    <script src="generateFile.js"></script>
+</body>
+
 </html>
