@@ -1,16 +1,48 @@
 <html>
-    <head>
-        <script src="../bower_components/platform/platform.js"></script>
-        <script src="../bower_components/polymer/polymer.js"></script>
-        <script src="dynamic_binding.js"></script>
-    </head>
-    <body>
-        <template id="wrapper" is="auto-binding">
-            <button on-click="{{addTemplate}}">Add Template?</button>
-        </template>
+
+<head>
+    <script src="../bower_components/platform/platform.js"></script>
+    <script src="../bower_components/polymer/polymer.js"></script>
+</head>
+
+<body>
+    <template id="wrapper" is="auto-binding">
+        <h1>Dynamic Data Binding Example</h1>
+        <p>
+            This example demonstrates using Polymer's data-binding functionality on content that has been inserted in the page.
+        </p>
+        <p>
+            When you click the button, a new <em>auto-binding</em> element is added to the page with the body:
+        </p>
+        <code>
+            <p>The special text is: '{stuff}'<p>
+        </code>
+        <p>
+            This element is also given the variable <em>stuff = 'special test for stuff'</em>. Because body of the new element references <em>stuff</em> using Polymer's data-binding syntax, the value of <em>stuff</em> is inserted into the page.
+        </p>
+        <p>
+            For convenience, the value of <em>stuff</em> can be set via the developer console, and on subsequent button clicks the added templates will have the new value.
+        </p>
+        <button on-click="{{addTemplate}}">Add Template</button>
+    </template>
 
     <script>
+        var stuff = 'special text for stuff';
+
+        function addTemplate() {
+            'use strict';
+
+            var template = new document.createElement('template');
+            template.setAttribute('is', 'auto-binding');
+
+            template.innerHTML = "<p>The special text is: '{{stuff}}'<p>";
+            template.stuff = stuff;
+
+            document.body.appendChild(template);
+        }
+
         document.getElementById('wrapper').addTemplate = addTemplate;
     </script>
-  </body>
+</body>
+
 </html>
