@@ -49,14 +49,14 @@ http.createServer(function (request, response) {
     } else if (request.method === "POST") {
         console.log("request to POST made:");
 
-        var body = '';
+        request.body = '';
 
         request.on('data', function (data) {
-            body += data;
+            request.body += data;
         });
 
         request.on('end', function (data) {
-            var post = qs.parse(body);
+            var post = qs.parse(request.body);
 
             response.writeHead(200, {
                 'Content-Type': 'text/plain',
