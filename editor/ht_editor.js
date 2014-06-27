@@ -1,4 +1,4 @@
-/*global hypertext, console*/
+/*global hypertext, console, FileReader*/
 var ht_editor = document.querySelector('#editor');
 
 (function (hypertext, editor) {
@@ -8,6 +8,12 @@ var ht_editor = document.querySelector('#editor');
     editor.selectedPassage = editor.passages[0];
     editor.rawVariables = '{\n    "player" : "bob"\n}';
     editor.context = JSON.parse(editor.rawVariables);
+
+    var reader = new FileReader();
+    reader.onloadend = function () {
+        editor.passages = JSON.parse(reader.result);
+        editor.updatePreview();
+    };
 
     editor.newPassage = function (e, detail, sender) {
         editor.passages.push(new hypertext.Passage());
@@ -52,6 +58,12 @@ var ht_editor = document.querySelector('#editor');
         var content = JSON.stringify(editor.passages);
         editor.$.submit_content.value = content;
         editor.$.submit.submit();
+    };
+
+    editor.uploadFile = function (e, detail, sender) {
+        var file = sender.files[0];
+        console.log('file chosen: ' + file.name);
+        reader.readAsText(file);
     };
 
     editor.addEventListener('template-bound', function () {

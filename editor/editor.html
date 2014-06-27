@@ -50,6 +50,9 @@
             <button id="export" on-tap="{{generateFile}}">Export</button>
         </form>
 
+        <label for="file_upload">Load Previous Work:</label>
+        <input id="file_upload" type="file" on-change="{{uploadFile}}">
+
     </template>
 
     <script src="ht_editor.js"></script>
