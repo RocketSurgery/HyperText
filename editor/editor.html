@@ -43,17 +43,16 @@
             <textarea id="variables_box" value="{{rawVariables}}" on-input="{{parseVariables}}"></textarea>
         </div>
 
+        <form id="submit" action="/" method="post">
+            <label for="submit_filename">Export As:</label>
+            <input id="submit_filename" type="text" name="filename" value="passages.ht.json">
+            <input id="submit_content" type="hidden" name="content">
+            <button id="export" on-tap="{{generateFile}}">Export</button>
+        </form>
+
     </template>
 
-    <form id="submit" action="/" method="post">
-        <label for="submit_filename">Export As:</label>
-        <input id="submit_filename" type="text" name="filename" value="passages.ht.json">
-        <input id="submit_content" type="hidden" name="content">
-        <button id="export">Export</button>
-    </form>
-
     <script src="ht_editor.js"></script>
-    <script src="generateFile.js"></script>
 </body>
 
 </html>

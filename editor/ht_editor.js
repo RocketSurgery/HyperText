@@ -4,10 +4,12 @@ var ht_editor = document.querySelector('#editor');
 (function (hypertext, editor) {
     'use strict';
 
-    editor.passages = [ new hypertext.Passage() ];
+    editor.passages = [new hypertext.Passage()];
     editor.selectedPassage = editor.passages[0];
     editor.rawVariables = '{\n    "player" : "bob"\n}';
-    editor.context = { test : 'this is a test' };
+    editor.context = {
+        test: 'this is a test'
+    };
 
     editor.newPassage = function (e, detail, sender) {
         editor.passages.push(new hypertext.Passage());
@@ -40,4 +42,11 @@ var ht_editor = document.querySelector('#editor');
         template.innerHTML = editor.selectedPassage.raw;
         previewArea.appendChild(template);
     };
+
+    editor.generateFile = function (e, detail, sender) {
+        var content = JSON.stringify(editor.passages);
+        editor.$.submit_content.value = content;
+        editor.$.form.submit();
+    };
+
 }(hypertext, ht_editor));
